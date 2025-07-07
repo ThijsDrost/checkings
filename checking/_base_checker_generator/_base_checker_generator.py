@@ -7,7 +7,7 @@ import itertools
 import os
 import pathlib
 
-from checking._no_val import NoValue
+from .._no_val import NoValue
 
 
 @dataclass
