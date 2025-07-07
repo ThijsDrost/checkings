@@ -1,0 +1,2 @@
+class ValidatorError(ExceptionGroup):
+    pass
