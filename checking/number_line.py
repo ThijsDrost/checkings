@@ -178,6 +178,28 @@ class Range:
             upper = ']'
         return f'{lower}{self.lower.value}, {self.upper.value}{upper}'
 
+    @staticmethod
+    def empty():
+        """
+        Create an empty range. An empty range includes no values.
+
+        Returns
+        -------
+        Range
+        """
+        return Range(MinusInfinity, Infinity, _check=False)
+
+    @staticmethod
+    def full():
+        """
+        Create a full range. A full range includes all values.
+
+        Returns
+        -------
+        Range
+        """
+        return Range(MinusInfinity, Infinity, _check=False)
+
 
 EmptyRange = Range(Infinity, MinusInfinity, _check=False)
 FullRange = Range(MinusInfinity, Infinity)
