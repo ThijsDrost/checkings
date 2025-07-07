@@ -7,9 +7,9 @@ import os  # noqa: F401
 
 import numpy as np  # noqa: F401
 
-from checking._no_val import NoValue
-from checking.number_line import NumberLine
-from checking._validator_error import ValidatorError
+from ._no_val import NoValue
+from .number_line import NumberLine
+from ._validator_error import ValidatorError
 
 
 class BaseChecker:
