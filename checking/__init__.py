@@ -1,8 +1,8 @@
-from checking._no_val import NoValue
-from checking._validator_error import ValidatorError
-from checking._descriptors import Descriptor
-from checking._validators import Validator
-import checking.number_line as number_line
+from ._no_val import NoValue
+from ._validator_error import ValidatorError
+from ._descriptors import Descriptor
+from ._validators import Validator
+import number_line as number_line
 
 __all__ = ['number_line']
 __all_exports = [ValidatorError, Descriptor, Validator]
