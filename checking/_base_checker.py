@@ -202,8 +202,11 @@ class BaseChecker:
         if self._validators is not NoValue:
             errors = []
             for index, validator in enumerate(self._validators):
-                message = validator(value)
-                if isinstance(message, Exception):
+                try:
+                    message = validator(value)
+                except BaseException as e:
+                    errors.append(ValueError(f'Validator named {validator.__name__} raised an exception: {e}'))
+                else:
                     errors.append(message)
             if errors:
                 return ValidatorError("Value did not pass all validators", errors)
