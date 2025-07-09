@@ -269,7 +269,7 @@ class BaseChecker:
     @classmethod
     def default_int(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of an int with default value `default`.
 
         Parameters
         ----------
@@ -281,7 +281,7 @@ class BaseChecker:
     @classmethod
     def default_float(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a float with default value `default`.
 
         Parameters
         ----------
@@ -293,7 +293,7 @@ class BaseChecker:
     @classmethod
     def default_str(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a str with default value `default`.
 
         Parameters
         ----------
@@ -305,7 +305,7 @@ class BaseChecker:
     @classmethod
     def default_tuple(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a tuple with default value `default`.
 
         Parameters
         ----------
@@ -317,7 +317,7 @@ class BaseChecker:
     @classmethod
     def default_dict(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a dict with default value `default`.
 
         Parameters
         ----------
@@ -329,7 +329,7 @@ class BaseChecker:
     @classmethod
     def default_list(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a list with default value `default`.
 
         Parameters
         ----------
@@ -341,7 +341,7 @@ class BaseChecker:
     @classmethod
     def default_slice(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a slice with default value `default`.
 
         Parameters
         ----------
@@ -353,7 +353,7 @@ class BaseChecker:
     @classmethod
     def default_integer(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of an integer with default value `default`.
 
         Parameters
         ----------
@@ -365,7 +365,7 @@ class BaseChecker:
     @classmethod
     def default_number(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a number with default value `default`.
 
         Parameters
         ----------
@@ -377,7 +377,7 @@ class BaseChecker:
     @classmethod
     def default_string(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a string with default value `default`.
 
         Parameters
         ----------
@@ -389,7 +389,7 @@ class BaseChecker:
     @classmethod
     def default_dictionary(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value default with default value `default`.
+        Check if the value is an instance of a dictionary with default value `default`.
 
         Parameters
         ----------
@@ -1053,13 +1053,6 @@ class BaseChecker:
         """
         Check if the value is an instance of an integer and is even.
         """
-        def is_even():
-            def checker(value):
-                if value % 2 != 0:
-                    return ValueError("Value must be even")
-                return None
-            return checker
-
         return cls(types=(int,), **kwargs) + cls(validators=is_even(), **kwargs)
      
     @classmethod
@@ -1067,13 +1060,6 @@ class BaseChecker:
         """
         Check if the value is an instance of an integer and is odd.
         """
-        def is_odd():
-            def checker(value):
-                if value % 2 == 0:
-                    return ValueError("Value must be odd")
-                return None
-            return checker
-
         return cls(types=(int,), **kwargs) + cls(validators=is_odd(), **kwargs)
      
     @classmethod
@@ -1086,13 +1072,6 @@ class BaseChecker:
         contains: str
             The value to contain
         """
-        def check_contains(contains):
-            def checker(value):
-                if contains not in value:
-                    return ValueError(f"Value must contain {contains}")
-                return None
-            return checker
-
         return cls(validators=check_contains(contains=contains), **kwargs)
      
     @classmethod
@@ -1112,9 +1091,6 @@ class BaseChecker:
         """
         Check if the value is not zero.
         """
-        def non_zero():
-            return NumberLine.exclude_from_floats(0, 0, False, False)
-
         return cls(number_line=non_zero(), **kwargs)
      
     @classmethod
@@ -1127,13 +1103,6 @@ class BaseChecker:
         length: int
             The correct length
         """
-        def check_len(length):
-            def checker(value):
-                if len(value) != length:
-                    return ValueError(f"Length must be {length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
@@ -1148,13 +1117,6 @@ class BaseChecker:
         max_length: int
             The maximum length
         """
-        def check_lens(min_length, max_length):
-            def checker(value):
-                if not min_length <= len(value) <= max_length:
-                    return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
@@ -1162,17 +1124,6 @@ class BaseChecker:
         """
         Check if the value is sorted.
         """
-        def check_sorted():
-            def checker(value):
-                if isinstance(value, np.ndarray):
-                    if not np.all(value[:-1] <= value[1:]):
-                        return ValueError(f"Value must be sorted")
-                else:
-                    if all(value[i] <= value[i+1] for i in range(len(value) - 1)):
-                        return ValueError(f"Value must be sorted")
-                return None
-            return checker
-
         return cls(validators=check_sorted(), **kwargs)
      
     @classmethod
@@ -1262,7 +1213,7 @@ class BaseChecker:
     @classmethod
     def is_hashable(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Hashable (:external+python:py:class:`collections.abc.Hashable`).
+        Check if the value is an instance of an Hashable (:external+python:py:class:`collections.abc.Hashable`).
         """
         return cls(types=(collections.abc.Hashable,), **kwargs)
      
@@ -1437,13 +1388,6 @@ class BaseChecker:
         of_type: type
             The type to check against
         """
-        def check_inside_type(type_):
-            def checker(value):
-                if not all(isinstance(val, type_) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
      
     @classmethod
@@ -1451,154 +1395,77 @@ class BaseChecker:
         """
         Check if the value is an instance of a list and contains values of type `int`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def list_of_float(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `float`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (float,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
      
     @classmethod
     def list_of_str(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `str`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (str,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def list_of_tuple(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `tuple`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (tuple,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
      
     @classmethod
     def list_of_dict(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `dict`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (dict,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def list_of_list(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `list`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (list,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
      
     @classmethod
     def list_of_slice(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `slice`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (slice,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
      
     @classmethod
     def list_of_integer(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `int`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def list_of_number(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `int` or `float`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int, float)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
      
     @classmethod
     def list_of_string(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `str`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (str,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def list_of_dictionary(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a list and contains values of type `dict`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (dict,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def tuple_of(cls, of_type: type, **kwargs) -> Self:
@@ -1610,13 +1477,6 @@ class BaseChecker:
         of_type: type
             The type to check against
         """
-        def check_inside_type(type_):
-            def checker(value):
-                if not all(isinstance(val, type_) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
      
     @classmethod
@@ -1624,154 +1484,77 @@ class BaseChecker:
         """
         Check if the value is an instance of a tuple and contains values of type `int`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def tuple_of_float(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `float`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (float,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
      
     @classmethod
     def tuple_of_str(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `str`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (str,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def tuple_of_tuple(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `tuple`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (tuple,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
      
     @classmethod
     def tuple_of_dict(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `dict`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (dict,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def tuple_of_list(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `list`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (list,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
      
     @classmethod
     def tuple_of_slice(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `slice`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (slice,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
      
     @classmethod
     def tuple_of_integer(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `int`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def tuple_of_number(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `int` or `float`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int, float)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
      
     @classmethod
     def tuple_of_string(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `str`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (str,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def tuple_of_dictionary(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a tuple and contains values of type `dict`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (dict,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def sequence_of(cls, of_type: type, **kwargs) -> Self:
@@ -1783,13 +1566,6 @@ class BaseChecker:
         of_type: type
             The type to check against
         """
-        def check_inside_type(type_):
-            def checker(value):
-                if not all(isinstance(val, type_) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
      
     @classmethod
@@ -1797,154 +1573,77 @@ class BaseChecker:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def sequence_of_float(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `float`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (float,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
      
     @classmethod
     def sequence_of_str(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (str,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def sequence_of_tuple(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `tuple`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (tuple,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
      
     @classmethod
     def sequence_of_dict(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (dict,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def sequence_of_list(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `list`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (list,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
      
     @classmethod
     def sequence_of_slice(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `slice`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (slice,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
      
     @classmethod
     def sequence_of_integer(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def sequence_of_number(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int` or `float`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (int, float)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
      
     @classmethod
     def sequence_of_string(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (str,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def sequence_of_dictionary(cls, **kwargs) -> Self:
         """
         Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
         """
-        def check_inside_type():
-            def checker(value):
-                if not all(isinstance(val, (dict,)) for val in value):
-                    return ValueError(f"Value must contain only values of type {type}")
-                return None
-            return checker
-
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(), **kwargs)
+        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def starts_with(cls, start: str, **kwargs) -> Self:
@@ -1956,13 +1655,6 @@ class BaseChecker:
         start: str
             The correct start
         """
-        def check_starts_with(start):
-            def checker(value):
-                if not value.startswith(start):
-                    return ValueError(f"Value must start with {start}")
-                return None
-            return checker
-
         return cls(types=(str,), **kwargs) + cls(validators=check_starts_with(start=start), **kwargs)
      
     @classmethod
@@ -1975,13 +1667,6 @@ class BaseChecker:
         end: str
             The correct end
         """
-        def check_ends_with(end):
-            def checker(value):
-                if not value.endswith(end):
-                    return ValueError(f"Value must end with {end}")
-                return None
-            return checker
-
         return cls(types=(str,), **kwargs) + cls(validators=check_ends_with(end=end), **kwargs)
      
     @classmethod
@@ -1994,13 +1679,6 @@ class BaseChecker:
         dims: int
             The correct number of dimensions
         """
-        def check_numpy_dims(dims):
-            def checker(value):
-                if value.ndim != dims:
-                    return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
-                return None
-            return checker
-
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dims(dims=dims), **kwargs)
      
     @classmethod
@@ -2013,13 +1691,6 @@ class BaseChecker:
         shape: tuple[int]
             The correct shape
         """
-        def check_numpy_shape(shape):
-            def checker(value):
-                if value.shape != shape:
-                    return ValueError(f"Value must have shape {shape}, not {value.shape}")
-                return None
-            return checker
-
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_shape(shape=shape), **kwargs)
      
     @classmethod
@@ -2032,13 +1703,6 @@ class BaseChecker:
         dtype: type
             The correct dtype
         """
-        def check_numpy_dtype(dtype):
-            def checker(value):
-                if value.dtype != dtype:
-                    return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
-                return None
-            return checker
-
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dtype(dtype=dtype), **kwargs)
      
     @classmethod
@@ -2051,13 +1715,6 @@ class BaseChecker:
         length: int
             The correct length
         """
-        def check_len(length):
-            def checker(value):
-                if len(value) != length:
-                    return ValueError(f"Length must be {length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
@@ -2072,13 +1729,6 @@ class BaseChecker:
         max_length: int
             The maximum length
         """
-        def check_lens(min_length, max_length):
-            def checker(value):
-                if not min_length <= len(value) <= max_length:
-                    return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
@@ -2091,13 +1741,6 @@ class BaseChecker:
         length: int
             The correct length
         """
-        def check_len(length):
-            def checker(value):
-                if len(value) != length:
-                    return ValueError(f"Length must be {length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(list,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
@@ -2112,13 +1755,6 @@ class BaseChecker:
         max_length: int
             The maximum length
         """
-        def check_lens(min_length, max_length):
-            def checker(value):
-                if not min_length <= len(value) <= max_length:
-                    return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(list,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
@@ -2131,13 +1767,6 @@ class BaseChecker:
         length: int
             The correct length
         """
-        def check_len(length):
-            def checker(value):
-                if len(value) != length:
-                    return ValueError(f"Length must be {length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(tuple,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
@@ -2152,13 +1781,6 @@ class BaseChecker:
         max_length: int
             The maximum length
         """
-        def check_lens(min_length, max_length):
-            def checker(value):
-                if not min_length <= len(value) <= max_length:
-                    return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(tuple,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
@@ -2171,13 +1793,6 @@ class BaseChecker:
         length: int
             The correct length
         """
-        def check_len(length):
-            def checker(value):
-                if len(value) != length:
-                    return ValueError(f"Length must be {length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
@@ -2192,13 +1807,6 @@ class BaseChecker:
         max_length: int
             The maximum length
         """
-        def check_lens(min_length, max_length):
-            def checker(value):
-                if not min_length <= len(value) <= max_length:
-                    return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
-                return None
-            return checker
-
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
@@ -2206,13 +1814,6 @@ class BaseChecker:
         """
         Check if the value is a valid path.
         """
-        def check_path():
-            def checker(value):
-                if not os.path.exists(value):
-                    return ValueError(f"Path does not exist")
-                return None
-            return checker
-
         return cls(validators=check_path(), **kwargs)
      
     @classmethod
@@ -2220,13 +1821,6 @@ class BaseChecker:
         """
         Check if the value is a valid directory.
         """
-        def check_dir():
-            def checker(value):
-                if not os.path.isdir(value):
-                    return ValueError(f"Path is not a directory")
-                return None
-            return checker
-
         return cls(validators=check_dir(), **kwargs)
      
     @classmethod
@@ -2234,13 +1828,6 @@ class BaseChecker:
         """
         Check if the value is a valid file.
         """
-        def check_file():
-            def checker(value):
-                if not os.path.isfile(value):
-                    return ValueError(f"Path is not a file")
-                return None
-            return checker
-
         return cls(validators=check_file(), **kwargs)
      
     @classmethod
@@ -2257,19 +1844,132 @@ class BaseChecker:
         dtype: type
             The correct dtype
         """
-        def check_numpy(dims, shape, dtype):
-            def checker(value):
-                nonlocal shape
-                if value.ndim != dims:
-                    return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
-                if isinstance(shape, int):
-                    shape = (shape,)
-                if value.shape != shape:
-                    return ValueError(f"Value must have shape {shape}, not {value.shape}")
-                if value.dtype != dtype:
-                    return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
-                return None
-            return checker
-
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy(dims=dims, shape=shape, dtype=dtype), **kwargs)
     
+
+def check_inside_type(type_):
+    def checker(value):
+        if not all(isinstance(val, type_) for val in value):
+            return ValueError(f"Value must contain only values of type {type}")
+        return None
+    return checker
+
+def non_zero():
+    return NumberLine.exclude_from_floats(0, 0, False, False)
+
+def is_even():
+    def checker(value):
+        if value % 2 != 0:
+            return ValueError("Value must be even")
+        return None
+    return checker
+
+def is_odd():
+    def checker(value):
+        if value % 2 == 0:
+            return ValueError("Value must be odd")
+        return None
+    return checker
+
+def check_starts_with(start):
+    def checker(value):
+        if not value.startswith(start):
+            return ValueError(f"Value must start with {start}")
+        return None
+    return checker
+
+def check_ends_with(end):
+    def checker(value):
+        if not value.endswith(end):
+            return ValueError(f"Value must end with {end}")
+        return None
+    return checker
+
+def check_numpy_dims(dims):
+    def checker(value):
+        if value.ndim != dims:
+            return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
+        return None
+    return checker
+
+def check_numpy_shape(shape):
+    def checker(value):
+        if value.shape != shape:
+            return ValueError(f"Value must have shape {shape}, not {value.shape}")
+        return None
+    return checker
+
+def check_numpy_dtype(dtype):
+    def checker(value):
+        if value.dtype != dtype:
+            return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
+        return None
+    return checker
+
+def check_numpy(dims, shape, dtype):
+    def checker(value):
+        nonlocal shape
+        if value.ndim != dims:
+            return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
+        if isinstance(shape, int):
+            shape = (shape,)
+        if value.shape != shape:
+            return ValueError(f"Value must have shape {shape}, not {value.shape}")
+        if value.dtype != dtype:
+            return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
+        return None
+    return checker
+
+def check_path():
+    def checker(value):
+        if not os.path.exists(value):
+            return ValueError(f"Path does not exist")
+        return None
+    return checker
+
+def check_dir():
+    def checker(value):
+        if not os.path.isdir(value):
+            return ValueError(f"Path is not a directory")
+        return None
+    return checker
+
+def check_file():
+    def checker(value):
+        if not os.path.isfile(value):
+            return ValueError(f"Path is not a file")
+        return None
+    return checker
+
+def check_len(length):
+    def checker(value):
+        if len(value) != length:
+            return ValueError(f"Length must be {length}, not {len(value)}")
+        return None
+    return checker
+
+def check_lens(min_length, max_length):
+    def checker(value):
+        if not min_length <= len(value) <= max_length:
+            return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
+        return None
+    return checker
+
+def check_contains(contains):
+    def checker(value):
+        if contains not in value:
+            return ValueError(f"Value must contain {contains}")
+        return None
+    return checker
+
+def check_sorted():
+    def checker(value):
+        if isinstance(value, np.ndarray):
+            if not np.all(value[:-1] <= value[1:]):
+                return ValueError(f"Value must be sorted")
+        else:
+            if all(value[i] <= value[i+1] for i in range(len(value) - 1)):
+                return ValueError(f"Value must be sorted")
+        return None
+    return checker
+

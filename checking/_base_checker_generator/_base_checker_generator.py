@@ -7,19 +7,25 @@ import itertools
 import os
 import pathlib
 
-from .._no_val import NoValue
+from checking._no_val import NoValue
 
 
 @dataclass
 class Parameter:
-    name: str
+    name: str | None
     param_name: str
     type: str
     description: str
+    _ = KW_ONLY
     default: any = NoValue
+    call_value: str = NoValue
+
+    def __post_init__(self):
+        if self.call_value is NoValue:
+            self.call_value = self.name
 
     def copy(self):
-        return Parameter(self.name, self.param_name, self.type, self.description, self.default)
+        return Parameter(self.name, self.param_name, self.type, self.description, default=self.default, call_value=self.call_value)
 
 
 @dataclass
@@ -44,6 +50,8 @@ class Validator:
         description = self.docstring_description
         if self.parameters is not None:
             for index in range(len(self.parameters)):
+                if self.parameters[index].name is None:
+                    continue
                 description = description.replace(f'{{{index}}}', self.parameters[index].name)
         return description
 
@@ -72,8 +80,7 @@ class Validator:
 
     def copy(self):
         if isinstance(self.parameters, Sequence):
-            parameters = [Parameter(param.name, param.param_name, param.type, param.description, param.default)
-                          for param in self.parameters]
+            parameters = [param.copy() for param in self.parameters]
         else:
             parameters = self.parameters
         return Validator(self.name, self.param_name, self.function, self.docstring_description, parameters, self.add_func)
@@ -86,20 +93,20 @@ class Validator:
         if param_name not in self.add_func:
             raise ValueError(f'Parameter {param_name} not found in add_func')
         new_params = []
+        params = [param.copy() for param in self.parameters]
         found = False
         docstring_description = self.docstring_description
-        for index, param in enumerate(self.parameters):
-            if param.param_name != param_name:
-                new_params.append(param.copy())
-                if found:
-                    docstring_description.replace(f'{{{index}}}', f'{{{index-1}}}')
-            else:
+        for index, param in enumerate(params):
+            if param.param_name == param_name:
                 found = True
+                param.name = None
+                param.call_value = value
                 docstring_description = docstring_description.replace(f'{{{index}}}', name)
+                params[index] = param
         if not found:
             raise ValueError(f'Parameter {param_name} not found in parameters')
         add_func = '\n'.join(((line.replace(param_name, '') if 'def' in line else line.replace(param_name, value)) for line in self.add_func.split('\n')))
-        return Validator(self.name, self.param_name, self.function, docstring_description, new_params, add_func)
+        return Validator(self.name, self.param_name, self.function, docstring_description, params, add_func)
 
 
 def make_checker(validators: Sequence[Validator], prefix=''):
@@ -114,7 +121,7 @@ def make_checker(validators: Sequence[Validator], prefix=''):
     parameters = [param for validator in param_validators for param in validator.parameters]
     parameters.sort(key=lambda x: x.default is not NoValue)
 
-    parameter_string = ', '.join([param_str(param) for param in parameters])
+    parameter_string = ', '.join([param_str(param) for param in parameters if param.name is not None])
     if parameter_string:
         parameter_string = ', ' + parameter_string
 
@@ -123,11 +130,11 @@ def make_checker(validators: Sequence[Validator], prefix=''):
     if len(description_validators) == 0:
         description = ''
     elif len(description_validators) == 1:
-        description += validators[0].get_docstring_description()
+        description += description_validators[0].get_docstring_description()
     elif len(description_validators) == 2:
-        description += f'{validators[0].get_docstring_description()} and {validators[1].get_docstring_description()}'
+        description += f'{description_validators[0].get_docstring_description()} and {description_validators[1].get_docstring_description()}'
     else:
-        description += ', and '.join([validator.get_docstring_description() for validator in validators])
+        description += ', and '.join([validator.get_docstring_description() for validator in description_validators])
 
     if 'default' in [validator.param_name for validator in validators]:
         if len(description_validators) == 0:
@@ -143,11 +150,11 @@ def make_checker(validators: Sequence[Validator], prefix=''):
         first_line += param.description
         return first_line
 
-    parameter_description = '\n'.join([param_description(param) for param in parameters])
+    parameter_description = '\n'.join([param_description(param) for param in parameters if param.name is not None])
 
     def call_str(validator: Validator):
         def param_string(param: Parameter):
-            return f'{param.param_name}={param.name}'
+            return f'{param.param_name}={param.call_value}'
 
         name = 'cls('
 
@@ -164,9 +171,9 @@ def make_checker(validators: Sequence[Validator], prefix=''):
     call_string = ' + '.join([call_str(validator) for validator in validators])
 
     add_func = ''
-    for validator in validators:
-        if validator.add_func is not None:
-            add_func += f'\n\t\t{validator.add_func}\n'
+    # for validator in validators:
+    #     if validator.add_func is not None:
+    #         add_func += f'\n\t\t{validator.add_func}\n'
 
     parameters_header = ''
     if parameter_description:
@@ -188,7 +195,7 @@ def capital_to_underscore(name):
 
 
 def a_or_an(word):
-    if word[0].lower() in 'aeiou':
+    if word[0].lower() in 'aeiouh':
         return 'an'
     return 'a'
 
@@ -205,11 +212,11 @@ types = types | {'integer': _integer_val, 'number': _number_val, 'string': _stri
 numbers = {name: types[name] for name in ['integer', 'number', 'float', 'int']}
 contains_type = Validator('of_type', 'validators', 'check_inside_type', docstring_description='contains values of type `{0}`',
                           parameters=[Parameter('of_type', 'type_', 'type', 'The type to check against')],
-                          add_func='def check_inside_type(type_):\n\t\t\t'
-                                   'def checker(value):\n\t\t\t\t'
-                                   'if not all(isinstance(val, type_) for val in value):\n\t\t\t\t\t'
-                                   'return ValueError(f"Value must contain only values of type {type}")\n\t\t\t\t'
-                                   'return None\n\t\t\t'
+                          add_func='def check_inside_type(type_):\n\t'
+                                   'def checker(value):\n\t\t'
+                                   'if not all(isinstance(val, type_) for val in value):\n\t\t\t'
+                                   'return ValueError(f"Value must contain only values of type {type}")\n\t\t'
+                                   'return None\n\t'
                                    'return checker')
 
 # ABCs
@@ -255,148 +262,148 @@ between = Validator('between', 'number_line', 'NumberLine.between_float',
                                 Parameter('end_inclusive', 'end_inclusive', 'bool',
                                           'Whether the upper bound is included in the range', False)])
 non_zero = Validator('non_zero', 'number_line', 'non_zero', docstring_description='is not zero',
-                     add_func='def non_zero():\n\t\t\t'
+                     add_func='def non_zero():\n\t'
                               'return NumberLine.exclude_from_floats(0, 0, False, False)')
 even = Validator('even', 'validators', 'is_even', docstring_description='is even',
-                 add_func='def is_even():\n\t\t\t'
-                          'def checker(value):\n\t\t\t\t'
-                          'if value % 2 != 0:\n\t\t\t\t\t'
-                          'return ValueError("Value must be even")\n\t\t\t\t'
-                          'return None\n\t\t\t'
+                 add_func='def is_even():\n\t'
+                          'def checker(value):\n\t\t'
+                          'if value % 2 != 0:\n\t\t\t'
+                          'return ValueError("Value must be even")\n\t\t'
+                          'return None\n\t'
                           'return checker')
 odd = Validator('odd', 'validators', 'is_odd', docstring_description='is odd',
-                add_func='def is_odd():\n\t\t\t'
-                         'def checker(value):\n\t\t\t\t'
-                         'if value % 2 == 0:\n\t\t\t\t\t'
-                         'return ValueError("Value must be odd")\n\t\t\t\t'
-                         'return None\n\t\t\t'
+                add_func='def is_odd():\n\t'
+                         'def checker(value):\n\t\t'
+                         'if value % 2 == 0:\n\t\t\t'
+                         'return ValueError("Value must be odd")\n\t\t'
+                         'return None\n\t'
                          'return checker')
 
 # Strings
 starts_with = Validator('starts_with', 'validators', 'check_starts_with', docstring_description='starts with `{0}`',
                         parameters=[Parameter('start', 'start', 'str', 'The correct start')],
-                        add_func='def check_starts_with(start):\n\t\t\t'
-                                 'def checker(value):\n\t\t\t\t'
-                                 'if not value.startswith(start):\n\t\t\t\t\t'
-                                 'return ValueError(f"Value must start with {start}")\n\t\t\t\t'
-                                 'return None\n\t\t\t'
+                        add_func='def check_starts_with(start):\n\t'
+                                 'def checker(value):\n\t\t'
+                                 'if not value.startswith(start):\n\t\t\t'
+                                 'return ValueError(f"Value must start with {start}")\n\t\t'
+                                 'return None\n\t'
                                  'return checker')
 ends_with = Validator('ends_with', 'validators', 'check_ends_with', docstring_description='ends in `{0}`',
                       parameters=[Parameter('end', 'end', 'str', 'The correct end')],
-                      add_func='def check_ends_with(end):\n\t\t\t'
-                               'def checker(value):\n\t\t\t\t'
-                               'if not value.endswith(end):\n\t\t\t\t\t'
-                               'return ValueError(f"Value must end with {end}")\n\t\t\t\t'
-                               'return None\n\t\t\t'
+                      add_func='def check_ends_with(end):\n\t'
+                               'def checker(value):\n\t\t'
+                               'if not value.endswith(end):\n\t\t\t'
+                               'return ValueError(f"Value must end with {end}")\n\t\t'
+                               'return None\n\t'
                                'return checker')
 
 # NumPy
 numpy_array = Validator('numpy_array', 'types', '(np.ndarray,)', docstring_description='is an instance of a numpy array')
 numpy_dims = Validator('numpy_dims', 'validators', 'check_numpy_dims', docstring_description='has `{0}` dimensions',
                        parameters=[Parameter('dims', 'dims', 'int', 'The correct number of dimensions')],
-                       add_func='def check_numpy_dims(dims):\n\t\t\t'
-                                'def checker(value):\n\t\t\t\t'
-                                'if value.ndim != dims:\n\t\t\t\t\t'
-                                'return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")\n\t\t\t\t'
-                                'return None\n\t\t\t'
+                       add_func='def check_numpy_dims(dims):\n\t'
+                                'def checker(value):\n\t\t'
+                                'if value.ndim != dims:\n\t\t\t'
+                                'return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")\n\t\t'
+                                'return None\n\t'
                                 'return checker')
 numpy_shape = Validator('numpy_shape', 'validators', 'check_numpy_shape', docstring_description='has shape `{0}`',
                         parameters=[Parameter('shape', 'shape', 'tuple[int]', 'The correct shape')],
-                        add_func='def check_numpy_shape(shape):\n\t\t\t'
-                                 'def checker(value):\n\t\t\t\t'
-                                 'if value.shape != shape:\n\t\t\t\t\t'
-                                 'return ValueError(f"Value must have shape {shape}, not {value.shape}")\n\t\t\t\t'
-                                 'return None\n\t\t\t'
+                        add_func='def check_numpy_shape(shape):\n\t'
+                                 'def checker(value):\n\t\t'
+                                 'if value.shape != shape:\n\t\t\t'
+                                 'return ValueError(f"Value must have shape {shape}, not {value.shape}")\n\t\t'
+                                 'return None\n\t'
                                  'return checker')
 numpy_dtype = Validator('numpy_dtype', 'validators', 'check_numpy_dtype', docstring_description='has dtype `{0}`',
                         parameters=[Parameter('dtype', 'dtype', 'type', 'The correct dtype')],
-                        add_func='def check_numpy_dtype(dtype):\n\t\t\t'
-                                 'def checker(value):\n\t\t\t\t'
-                                 'if value.dtype != dtype:\n\t\t\t\t\t'
-                                 'return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")\n\t\t\t\t'
-                                 'return None\n\t\t\t'
+                        add_func='def check_numpy_dtype(dtype):\n\t'
+                                 'def checker(value):\n\t\t'
+                                 'if value.dtype != dtype:\n\t\t\t'
+                                 'return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")\n\t\t'
+                                 'return None\n\t'
                                  'return checker')
 numpy_dim_shape_dtype = Validator('numpy', 'validators', 'check_numpy', docstring_description='has `{0}` dimensions, shape `{1}` and dtype `{2}`',
                                   parameters=[Parameter('dims', 'dims', 'int', 'The correct number of dimensions'),
                                               Parameter('shape', 'shape', 'int | tuple[int]', 'The correct shape'),
                                               Parameter('dtype', 'dtype', 'type', 'The correct dtype')],
-                                  add_func='def check_numpy(dims, shape, dtype):\n\t\t\t'
-                                           'def checker(value):\n\t\t\t\t'
-                                           'nonlocal shape\n\t\t\t\t'
-                                           'if value.ndim != dims:\n\t\t\t\t\t'
-                                           'return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")\n\t\t\t\t'
-                                           'if isinstance(shape, int):\n\t\t\t\t\t'
-                                           'shape = (shape,)\n\t\t\t\t'
-                                           'if value.shape != shape:\n\t\t\t\t\t'
-                                           'return ValueError(f"Value must have shape {shape}, not {value.shape}")\n\t\t\t\t'
-                                           'if value.dtype != dtype:\n\t\t\t\t\t'
-                                           'return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")\n\t\t\t\t'
-                                           'return None\n\t\t\t'
+                                  add_func='def check_numpy(dims, shape, dtype):\n\t'
+                                           'def checker(value):\n\t\t'
+                                           'nonlocal shape\n\t\t'
+                                           'if value.ndim != dims:\n\t\t\t'
+                                           'return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")\n\t\t'
+                                           'if isinstance(shape, int):\n\t\t\t'
+                                           'shape = (shape,)\n\t\t'
+                                           'if value.shape != shape:\n\t\t\t'
+                                           'return ValueError(f"Value must have shape {shape}, not {value.shape}")\n\t\t'
+                                           'if value.dtype != dtype:\n\t\t\t'
+                                           'return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")\n\t\t'
+                                           'return None\n\t'
                                            'return checker')
 
 
 # Paths
 path_val = Validator('path', 'validators', 'check_path', docstring_description='is a valid path',
-                     add_func='def check_path():\n\t\t\t'
-                              'def checker(value):\n\t\t\t\t'
-                              'if not os.path.exists(value):\n\t\t\t\t\t'
-                              'return ValueError(f"Path does not exist")\n\t\t\t\t'
-                              'return None\n\t\t\t'
+                     add_func='def check_path():\n\t'
+                              'def checker(value):\n\t\t'
+                              'if not os.path.exists(value):\n\t\t\t'
+                              'return ValueError(f"Path does not exist")\n\t\t'
+                              'return None\n\t'
                               'return checker')
 dir_val = Validator('dir', 'validators', 'check_dir', docstring_description='is a valid directory',
-                    add_func='def check_dir():\n\t\t\t'
-                             'def checker(value):\n\t\t\t\t'
-                             'if not os.path.isdir(value):\n\t\t\t\t\t'
-                             'return ValueError(f"Path is not a directory")\n\t\t\t\t'
-                             'return None\n\t\t\t'
+                    add_func='def check_dir():\n\t'
+                             'def checker(value):\n\t\t'
+                             'if not os.path.isdir(value):\n\t\t\t'
+                             'return ValueError(f"Path is not a directory")\n\t\t'
+                             'return None\n\t'
                              'return checker')
 file_val = Validator('file', 'validators', 'check_file', docstring_description='is a valid file',
-                     add_func='def check_file():\n\t\t\t'
-                              'def checker(value):\n\t\t\t\t'
-                              'if not os.path.isfile(value):\n\t\t\t\t\t'
-                              'return ValueError(f"Path is not a file")\n\t\t\t\t'
-                              'return None\n\t\t\t'
+                     add_func='def check_file():\n\t'
+                              'def checker(value):\n\t\t'
+                              'if not os.path.isfile(value):\n\t\t\t'
+                              'return ValueError(f"Path is not a file")\n\t\t'
+                              'return None\n\t'
                               'return checker')
 
 
 # Miscellaneous
 length = Validator('length', 'validators', 'check_len', docstring_description='of length `{0}`',
                    parameters=[Parameter('length', 'length', 'int', 'The correct length')],
-                   add_func='def check_len(length):\n\t\t\t'
-                             'def checker(value):\n\t\t\t\t'
-                             'if len(value) != length:\n\t\t\t\t\t'
-                             'return ValueError(f"Length must be {length}, not {len(value)}")\n\t\t\t\t'
-                             'return None\n\t\t\t'
+                   add_func='def check_len(length):\n\t'
+                             'def checker(value):\n\t\t'
+                             'if len(value) != length:\n\t\t\t'
+                             'return ValueError(f"Length must be {length}, not {len(value)}")\n\t\t'
+                             'return None\n\t'
                              'return checker')
 lengths = Validator('lengths', 'validators', 'check_lens', docstring_description='of length between `{0}` and `{1}` (both inclusive)',
                     parameters=[Parameter('min_length', 'min_length', 'int', 'The minimum length'),
                                 Parameter('max_length', 'max_length', 'int', 'The maximum length')],
-                    add_func='def check_lens(min_length, max_length):\n\t\t\t'
-                             'def checker(value):\n\t\t\t\t'
-                             'if not min_length <= len(value) <= max_length:\n\t\t\t\t\t'
-                             'return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")\n\t\t\t\t'
-                             'return None\n\t\t\t'
+                    add_func='def check_lens(min_length, max_length):\n\t'
+                             'def checker(value):\n\t\t'
+                             'if not min_length <= len(value) <= max_length:\n\t\t\t'
+                             'return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")\n\t\t'
+                             'return None\n\t'
                              'return checker')
 contains = Validator('contains', 'validators', 'check_contains', docstring_description='contains `{0}`',
                      parameters=[Parameter('contains', 'contains', 'str', 'The value to contain')],
-                     add_func='def check_contains(contains):\n\t\t\t'
-                              'def checker(value):\n\t\t\t\t'
-                              'if contains not in value:\n\t\t\t\t\t'
-                              'return ValueError(f"Value must contain {contains}")\n\t\t\t\t'
-                              'return None\n\t\t\t'
+                     add_func='def check_contains(contains):\n\t'
+                              'def checker(value):\n\t\t'
+                              'if contains not in value:\n\t\t\t'
+                              'return ValueError(f"Value must contain {contains}")\n\t\t'
+                              'return None\n\t'
                               'return checker')
 literals = Validator('literals', 'literals', 'literals', docstring_description='is one of `{0}`',
                      parameters=[Parameter('literals', 'literals', 'collections.abc.Sequence', 'The literals to check against')])
 sorted_val = Validator('sorted', 'validators', 'check_sorted', docstring_description='is sorted',
-                       add_func='def check_sorted():\n\t\t\t'
-                                'def checker(value):\n\t\t\t\t'
-                                'if isinstance(value, np.ndarray):\n\t\t\t\t\t'
-                                'if not np.all(value[:-1] <= value[1:]):\n\t\t\t\t\t\t'
-                                'return ValueError(f"Value must be sorted")\n\t\t\t\t'
-                                'else:\n\t\t\t\t\t'
-                                'if all(value[i] <= value[i+1] for i in range(len(value) - 1)):\n\t\t\t\t\t\t'
-                                'return ValueError(f"Value must be sorted")\n\t\t\t\t'
-                                'return None\n\t\t\t'
+                       add_func='def check_sorted():\n\t'
+                                'def checker(value):\n\t\t'
+                                'if isinstance(value, np.ndarray):\n\t\t\t'
+                                'if not np.all(value[:-1] <= value[1:]):\n\t\t\t\t'
+                                'return ValueError(f"Value must be sorted")\n\t\t'
+                                'else:\n\t\t\t'
+                                'if all(value[i] <= value[i+1] for i in range(len(value) - 1)):\n\t\t\t\t'
+                                'return ValueError(f"Value must be sorted")\n\t\t'
+                                'return None\n\t'
                                 'return checker')
 default = Validator('default', 'default', 'default', parameters=[Parameter('default', 'default', 'any', 'The default value')])
 
@@ -417,6 +424,13 @@ def write_validator_name(file_handle, validators: Iterable[Validator], name: str
     for i in range(1, len(validators)):
         validators[i].name = ''
     file_handle.write(make_checker(validators))
+
+
+def write_funcs(validators: Iterable[Validator], file_handle):
+    for validator in validators:
+        if validator.add_func is not None:
+            file_handle.write(validator.add_func.replace('\t', '    '))
+            file_handle.write("\n\n")
 
 
 path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -469,3 +483,10 @@ with open(out_loc, 'a') as file:
 
     # Numpy
     write_validator_name(file, [numpy_array, numpy_dim_shape_dtype], name='numpy')
+
+    file.write("\n\n")
+    validator_funcs = [contains_type, non_zero, even, odd, starts_with, ends_with, numpy_dims, numpy_shape, numpy_dtype,
+                        numpy_dim_shape_dtype, path_val, dir_val, file_val, length, lengths, contains, sorted_val]
+    write_funcs(validator_funcs, file)
+
+# %%
