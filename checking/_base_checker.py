@@ -1649,6 +1649,42 @@ class BaseChecker:
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
+    def has_attr(cls, attr: str, **kwargs) -> Self:
+        """
+        Check if the value has attribute `attr`.
+
+        Parameters
+        ----------
+        attr: str
+            The attribute to check for
+        """
+        return cls(validators=check_has_attr(attr=attr), **kwargs)
+     
+    @classmethod
+    def has_method(cls, method: str, **kwargs) -> Self:
+        """
+        Check if the value has method `method`.
+
+        Parameters
+        ----------
+        method: str
+            The method to check for
+        """
+        return cls(validators=check_has_method(method=method), **kwargs)
+     
+    @classmethod
+    def has_property(cls, property: str, **kwargs) -> Self:
+        """
+        Check if the value has property `property`.
+
+        Parameters
+        ----------
+        property: str
+            The property to check for
+        """
+        return cls(validators=check_has_property(property=property), **kwargs)
+     
+    @classmethod
     def starts_with(cls, start: str, **kwargs) -> Self:
         """
         Check if the value is an instance of a str and starts with `start`.
@@ -1707,6 +1743,18 @@ class BaseChecker:
             The correct dtype
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dtype(dtype=dtype), **kwargs)
+     
+    @classmethod
+    def numpy_subdtype(cls, subdtype: type, **kwargs) -> Self:
+        """
+        Check if the value is an instance of a numpy array and has subdtype `subdtype`.
+
+        Parameters
+        ----------
+        subdtype: type
+            The correct subdtype
+        """
+        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_subdtype(subdtype=subdtype), **kwargs)
      
     @classmethod
     def sequence_of_length(cls, length: int, **kwargs) -> Self:
@@ -1850,15 +1898,6 @@ class BaseChecker:
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy(dims=dims, shape=shape, dtype=dtype), **kwargs)
     
 
-def check_inside_type(type_):
-    def checker(value):
-        if not all(isinstance(val, type_) for val in value):
-            return ValueError(f"Value must contain only values of type {type}")
-        return None
-    return checker
-
-def non_zero():
-    return NumberLine.exclude_from_floats(0, 0, False, False)
 
 def is_even():
     def checker(value):
@@ -1871,6 +1910,77 @@ def is_odd():
     def checker(value):
         if value % 2 == 0:
             return ValueError("Value must be odd")
+        return None
+    return checker
+
+def check_contains(contains):
+    def checker(value):
+        if contains not in value:
+            return ValueError(f"Value must contain {contains}")
+        return None
+    return checker
+
+def non_zero():
+    return NumberLine.exclude_from_floats(0, 0, False, False)
+
+def check_len(length):
+    def checker(value):
+        if len(value) != length:
+            return ValueError(f"Length must be {length}, not {len(value)}")
+        return None
+    return checker
+
+def check_lens(min_length, max_length):
+    def checker(value):
+        if not min_length <= len(value) <= max_length:
+            return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
+        return None
+    return checker
+
+def check_sorted():
+    def checker(value):
+        if isinstance(value, np.ndarray):
+            if not np.all(value[:-1] <= value[1:]):
+                return ValueError(f"Value must be sorted")
+        else:
+            if all(value[i] <= value[i+1] for i in range(len(value) - 1)):
+                return ValueError(f"Value must be sorted")
+        return None
+    return checker
+
+def check_inside_type(type_):
+    def checker(value):
+        if any(not isinstance(val, type_) for val in value):
+            errors = []
+            for index, val in enumerate(value):
+                if not isinstance(val, type_):
+                    errors.append(f"value at {index} is of type {type(val)}")
+            if len(errors) == 1:
+                return ValueError(f"Value must contain only values of type {type_}. Error: {errors[0]}")
+            else:
+                return ValueError(
+                    f"Value must contain only values of type {type_}. Errors: {', '.join(errors[:-1])}, and {errors[-1]}")
+        return None
+    return checker
+
+def check_has_attr(attr):
+    def checker(value):
+        if not hasattr(value, attr):
+            return ValueError(f"Value must have attribute {attr}")
+        return None
+    return checker
+
+def check_has_method(method):
+    def checker(value):
+        if not hasattr(value, method) or not callable(getattr(value, method)):
+            return ValueError(f"Value must have method {method}")
+        return None
+    return checker
+
+def check_has_property(property):
+    def checker(value):
+        if not hasattr(value, property) or not isinstance(getattr(value, property), property):
+            return ValueError(f"Value must have property {property}")
         return None
     return checker
 
@@ -1909,17 +2019,10 @@ def check_numpy_dtype(dtype):
         return None
     return checker
 
-def check_numpy(dims, shape, dtype):
+def check_numpy_subdtype(subdtype):
     def checker(value):
-        nonlocal shape
-        if value.ndim != dims:
-            return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
-        if isinstance(shape, int):
-            shape = (shape,)
-        if value.shape != shape:
-            return ValueError(f"Value must have shape {shape}, not {value.shape}")
-        if value.dtype != dtype:
-            return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
+        if np.issubdtype(value.dtype, subdtype):
+            return ValueError(f"Value must have subdtype of {subdtype}, not {value.dtype}")
         return None
     return checker
 
@@ -1944,35 +2047,17 @@ def check_file():
         return None
     return checker
 
-def check_len(length):
+def check_numpy(dims, shape, dtype):
     def checker(value):
-        if len(value) != length:
-            return ValueError(f"Length must be {length}, not {len(value)}")
-        return None
-    return checker
-
-def check_lens(min_length, max_length):
-    def checker(value):
-        if not min_length <= len(value) <= max_length:
-            return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
-        return None
-    return checker
-
-def check_contains(contains):
-    def checker(value):
-        if contains not in value:
-            return ValueError(f"Value must contain {contains}")
-        return None
-    return checker
-
-def check_sorted():
-    def checker(value):
-        if isinstance(value, np.ndarray):
-            if not np.all(value[:-1] <= value[1:]):
-                return ValueError(f"Value must be sorted")
-        else:
-            if all(value[i] <= value[i+1] for i in range(len(value) - 1)):
-                return ValueError(f"Value must be sorted")
+        nonlocal shape
+        if value.ndim != dims:
+            return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
+        if isinstance(shape, int):
+            shape = (shape,)
+        if value.shape != shape:
+            return ValueError(f"Value must have shape {shape}, not {value.shape}")
+        if value.dtype != dtype:
+            return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
         return None
     return checker
 
