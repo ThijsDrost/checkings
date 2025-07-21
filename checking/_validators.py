@@ -74,14 +74,37 @@ class _DirectCallMeta(type):
 
     @staticmethod
     def _combine_call(func):
-        parameters = inspect.signature(func).parameters
+        parameters = [p for p in inspect.signature(func).parameters.values()]
+
+        min_args = 0
+        min_kwargs = 0
+        argkwargs = []
         num_parameters = len(parameters)
-        parameters_names = list(parameters.keys())
+        for p in parameters:
+            if p.kind == p.VAR_POSITIONAL:
+                raise ValueError(f'Cannot use `*args` for {func.__name__}, since the number of parameters must be fixed.')
+            if p.kind == p.VAR_KEYWORD:
+                num_parameters -= 1
+                continue
+            if p.default is not p.empty:
+                continue
+
+            if p.kind == p.POSITIONAL_ONLY:
+                min_args += 1
+            elif p.kind == p.KEYWORD_ONLY:
+                min_kwargs += 1
+            elif p.kind == p.POSITIONAL_OR_KEYWORD:
+                argkwargs += [p.name]
+
+        parameters_names = tuple(par.name for par in parameters)
         if ('name' in parameters_names) or ('value' in parameters_names):
             raise ValueError(f'Cannot have `name` or `value` as a parameter name for {func.__name__},'
                              f' since these are used for the call method.')
 
         def call(*args, **kwargs):
+            nonlocal min_args, min_kwargs, argkwargs
+            argkwargs = argkwargs.copy()
+
             call_together = False
             if (len(args) + len(kwargs)) > num_parameters:
                 call_together = True
@@ -94,6 +117,14 @@ class _DirectCallMeta(type):
                     del kwargs[key]
                     num -= 1
                     call_together = True
+
+            for key in kwargs:
+                if key in argkwargs:
+                    argkwargs.pop(argkwargs.index(key))
+
+            if len(args) < num + min_args + len(argkwargs):
+                num_missing = num + min_args + len(argkwargs) - len(args)
+                raise TypeError(f'{func.__name__}() missing {num_missing} positional argument{"s" if num_missing > 1 else ""} (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call).')
 
             if call_together:
                 return func(*args[:-num], **kwargs)(*args[-num:], **call_kwargs)
