@@ -2,12 +2,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass, KW_ONLY
 from collections.abc import Sequence, Iterable
+from typing import Callable
 import shutil
 import itertools
 import os
 import pathlib
+import inspect
 
 from checking._no_val import NoValue
+
+
+VALIDATOR_FUNCS = {}
 
 
 @dataclass
@@ -36,11 +41,13 @@ class Validator:
     _ = KW_ONLY
     docstring_description: str = None
     parameters: Sequence[Parameter] = None
-    add_func: str = None
+    add_func: str | Callable = None
 
     def __post_init__(self):
         if self.docstring_description is None:
             self.docstring_description = self.name.replace('_', ' ').lower()
+        if isinstance(self.add_func, Callable):
+            self.add_func = "\n".join(inspect.getsourcelines(self.add_func)[0])
 
     # def copy(self):
     #     parameters = [param.copy() for param in self.parameters]
@@ -187,6 +194,13 @@ def make_checker(validators: Sequence[Validator], prefix=''):
         \"\"\"{add_func}
         return {call_string}
     """.replace('\t', '    ')
+
+    for validator in validators:
+        if isinstance(validator.add_func, str):
+            val, _ = validator.add_func.split("(", 1)
+            val = val.removeprefix("def ")
+            if val not in VALIDATOR_FUNCS:
+                VALIDATOR_FUNCS[val] = validator.add_func
     return func
 
 
@@ -210,14 +224,27 @@ types = {name: Validator(name.lower(), 'types', f'({name},)',
                                                                                             'dict', 'list', 'slice']}
 types = types | {'integer': _integer_val, 'number': _number_val, 'string': _string_val, 'dictionary': _dictionary_val}
 numbers = {name: types[name] for name in ['integer', 'number', 'float', 'int']}
+
+
+def check_inside_type(type_):
+    def checker(value):
+        if any(not isinstance(val, type_) for val in value):
+            errors = []
+            for index, val in enumerate(value):
+                if not isinstance(val, type_):
+                    errors.append(f"value at {index} is of type {type(val)}")
+
+            if len(errors) == 1:
+                return ValueError(f"Value must contain only values of type {type_}. Error: {errors[0]}")
+            else:
+                return ValueError(
+                    f"Value must contain only values of type {type_}. Errors: {', '.join(errors[:-1])}, and {errors[-1]}")
+        return None
+    return checker
+
 contains_type = Validator('of_type', 'validators', 'check_inside_type', docstring_description='contains values of type `{0}`',
                           parameters=[Parameter('of_type', 'type_', 'type', 'The type to check against')],
-                          add_func='def check_inside_type(type_):\n\t'
-                                   'def checker(value):\n\t\t'
-                                   'if not all(isinstance(val, type_) for val in value):\n\t\t\t'
-                                   'return ValueError(f"Value must contain only values of type {type}")\n\t\t'
-                                   'return None\n\t'
-                                   'return checker')
+                          add_func=check_inside_type)
 
 # ABCs
 abc_names = ['Container', 'Hashable', 'Iterable', 'Reversible', 'Generator', 'Sized', 'Callable', 'Collection', 'Sequence',
@@ -426,12 +453,17 @@ def write_validator_name(file_handle, validators: Iterable[Validator], name: str
     file_handle.write(make_checker(validators))
 
 
-def write_funcs(validators: Iterable[Validator], file_handle):
-    for validator in validators:
-        if validator.add_func is not None:
-            file_handle.write(validator.add_func.replace('\t', '    '))
-            file_handle.write("\n\n")
+def write_funcs(file_handle):
+    def remove_indentation(func):
+        lines = [line for line in func.split('\n') if line]
+        indents = lines[0].find('def ')
+        return '\n'.join(line[indents:] for line in lines)
 
+    file_handle.write("\n")
+    for func in VALIDATOR_FUNCS.values():
+        if isinstance(func, str):
+            file_handle.write(remove_indentation(func.replace('\t', '    ')))
+            file_handle.write("\n\n")
 
 path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 stub_loc = os.path.join(path, '_base_checker_stub.py')
@@ -484,9 +516,11 @@ with open(out_loc, 'a') as file:
     # Numpy
     write_validator_name(file, [numpy_array, numpy_dim_shape_dtype], name='numpy')
 
+    # Miscellaneous
     file.write("\n\n")
     validator_funcs = [contains_type, non_zero, even, odd, starts_with, ends_with, numpy_dims, numpy_shape, numpy_dtype,
-                        numpy_dim_shape_dtype, path_val, dir_val, file_val, length, lengths, contains, sorted_val]
-    write_funcs(validator_funcs, file)
+                        numpy_dim_shape_dtype, path_val, dir_val, file_val, length, lengths, contains, sorted_val, numpy_subdtype]
+    # write_funcs(validator_funcs, file)
+    write_funcs(file)
 
 # %%
