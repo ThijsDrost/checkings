@@ -11,19 +11,39 @@ The `checking` library provides tools for validating Python dataclasses and vari
 
 ### Validating variables
 
-You can use the validator `Validator`.
+You can use the validator `Validator`. You can either first create a validator and then use it, or you can combine the
+creation and validation.
 
 ```python
 from checking import Validator
 
 positive_num = Validator.positive(True)
-positive_num(42)  # This will pass validation
-positive_num(-10) # This will raise a ValidationError
+positive_num(42, "somenumber")  # This will pass validation
+positive_num(-10, "somenumber") # This will raise a ValidationError
+
+Validator.positive(True, -2, "somenumber")  # This will raise a ValidationError
+```
+
+It is also possible to construct a custom validator
+```python
+from checking import Validator
+
+validator_literals = Validator(literals=('a', 'b', 'c'))  # This will validate that the input is one of the specified literals
+validator_literals('a', "somestring")  # This will pass validation
+validator_literals('d', "somestring")  # This will raise a ValidationError
+
+validator_types = Validator(types=(tuple, list))  # This will validate that the input is a tuple or a list
+validator_types([1, 2, 3], "somelist")  # This will pass validation
+validator_types('not a list', "somelist")  # This will raise a ValidationError
+
+validator_converter = Validator(types=(int, float), converter=float)  # This will validate that the input is a number and if not try to convert it to float
+value = validator_converter('3.14', "somenumber")  # This will pass validation and return the float
+validator_converter('not a number', "somenumber")  # This will raise a ValidationError
 ```
 
 ### Dataclass descriptors
 
-The library integrates with Python dataclasses to validate fields automatically.
+The library integrates with Python dataclasses to validate fields automatically, similarly to Validators.
 
 ```python
 from dataclasses import dataclass
