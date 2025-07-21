@@ -14,7 +14,6 @@ class _DirectCallMeta(type):
             func = getattr(new_class, a)
 
             if docs is None:
-                print(a)
                 docs = ''
 
             def add_to_docs(docs, name, value):
