@@ -12,7 +12,7 @@ The `checking` library provides tools for validating Python dataclasses and vari
 ### Validating variables
 
 You can use the validator `Validator`. You can either first create a validator and then use it, or you can combine the
-creation and validation.
+creation and validation. When validating a value, you pass the value and a name for the variable, the name is used in error messages.
 
 ```python
 from checking import Validator
@@ -21,7 +21,9 @@ positive_num = Validator.positive(True)
 positive_num(42, "somenumber")  # This will pass validation
 positive_num(-10, "somenumber") # This will raise a ValidationError
 
-Validator.positive(True, -2, "somenumber")  # This will raise a ValidationError
+# These are the same as above, but by directly calling the validator with validation parameters
+Validator.positive(True, 42, "somenumber")  # This will raise a ValidationError
+Validator.positive(True, -10, "somenumber")  # This will raise a ValidationError
 ```
 
 It is also possible to construct a custom validator
