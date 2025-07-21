@@ -9,7 +9,7 @@ class _DirectCallMeta(type):
         new_class = super().__new__(cls, name, bases, dct)
         _attributes = [a for a in dir(new_class) if not a.startswith('_') and callable(getattr(new_class, a))]
         for a in _attributes:
-            docs = getattr(new_class, a).__doc__
+            docs = inspect.cleandoc(getattr(new_class, a).__doc__)
             setattr(new_class, a, _DirectCallMeta._combine_call(getattr(new_class, a)))
             func = getattr(new_class, a)
 
@@ -17,14 +17,50 @@ class _DirectCallMeta(type):
                 print(a)
                 docs = ''
 
-            func.__doc__ = (docs +
-                            f'\n'
-                            f'Notes\n'
-                            f'-----\n'
-                            f'This function can be called directly by combining the parameters of the function and the call to '
-                            f'the validator. It assumes that both are called directly when either the number of arguments is '
-                            f'greater than the number of parameters for the function or when the `name` and/or `value` keyword '
-                            f'argument are used.')
+            def add_to_docs(docs, name, value):
+                parameters_start = False
+                split_docs = docs.split('\n')
+                for index, line in enumerate(split_docs):
+                    if line.startswith(name):
+                        parameters_start = True
+                    if parameters_start and split_docs[index-1] != name and line.startswith("---"):
+                        index -= 1
+                        break
+                else:
+                    index += 1
+
+                if parameters_start:
+                    before = '\n'.join(split_docs[:index])
+
+                    if index == len(split_docs):
+                        after = ''
+                    else:
+                        after = '\n'.join(split_docs[index:])
+                    new_docs = before + "\n" + inspect.cleandoc(value) + "\n" + after
+
+                else:
+                    new_docs = docs + f'\n{name}\n-----\n{inspect.cleandoc(value)}\n'
+                return new_docs
+
+            param_docs = \
+            """
+            value: Optional[Any]
+                The value to be validated, used for the direct call to the validator
+            name: Optional[str]
+                The name of the parameter to be validated, used for the direct call to the validator. This is used to provide a more informative error message.
+            """
+
+            notes = \
+            """
+            This function can be called directly by combining the parameters of the function and the call to 
+            the validator. It assumes that both are called directly when either the number of arguments is 
+            greater than the number of parameters for the function or when the `name` and/or `value` keyword 
+            argument are used.
+            """
+            docs = add_to_docs(docs, 'Parameters', param_docs)
+            docs = add_to_docs(docs, 'Notes', notes)
+
+            func.__doc__ = docs
 
         return new_class
 
