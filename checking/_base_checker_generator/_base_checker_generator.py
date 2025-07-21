@@ -376,6 +376,14 @@ numpy_dtype = Validator('numpy_dtype', 'validators', 'check_numpy_dtype', docstr
                                  'return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")\n\t\t'
                                  'return None\n\t'
                                  'return checker')
+numpy_subdtype = Validator('numpy_subdtype', 'validators', 'check_numpy_subdtype', docstring_description='has subdtype `{0}`',
+                        parameters=[Parameter('subdtype', 'subdtype', 'type', 'The correct subdtype')],
+                        add_func='def check_numpy_subdtype(subdtype):\n\t'
+                                 'def checker(value):\n\t\t'
+                                 'if np.issubdtype(value.dtype, subdtype):\n\t\t\t'
+                                 'return ValueError(f"Value must have subdtype of {subdtype}, not {value.dtype}")\n\t\t'
+                                 'return None\n\t'
+                                 'return checker')
 numpy_dim_shape_dtype = Validator('numpy', 'validators', 'check_numpy', docstring_description='has `{0}` dimensions, shape `{1}` and dtype `{2}`',
                                   parameters=[Parameter('dims', 'dims', 'int', 'The correct number of dimensions'),
                                               Parameter('shape', 'shape', 'int | tuple[int]', 'The correct shape'),
@@ -530,8 +538,8 @@ with open(out_loc, 'a') as file:
     write_validator_name(file, [types['str'], starts_with], name='starts_with')
     write_validator_name(file, [types['str'], ends_with], name='ends_with')
 
-    # Strings
-    for name, validator in (('numpy_dim', numpy_dims), ('numpy_shape', numpy_shape), ('numpy_dtype', numpy_dtype)):
+    # Numpy
+    for name, validator in (('numpy_dim', numpy_dims), ('numpy_shape', numpy_shape), ('numpy_dtype', numpy_dtype), ('numpy_subdtype', numpy_subdtype)):
         write_validator_name(file, [numpy_array, validator], name=name)
 
     # Sequence length
