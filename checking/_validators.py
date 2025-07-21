@@ -122,11 +122,12 @@ class _DirectCallMeta(type):
                 if key in argkwargs:
                     argkwargs.pop(argkwargs.index(key))
 
-            if len(args) < num + min_args + len(argkwargs):
-                num_missing = num + min_args + len(argkwargs) - len(args)
-                raise TypeError(f'{func.__name__}() missing {num_missing} positional argument{"s" if num_missing > 1 else ""} (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call).')
-
             if call_together:
+                if len(args) < num + min_args + len(argkwargs):
+                    num_missing = num + min_args + len(argkwargs) - len(args)
+                    raise TypeError(
+                        f'{func.__name__}() missing {num_missing} positional argument{"s" if num_missing > 1 else ""} (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call).')
+
                 return func(*args[:-num], **kwargs)(*args[-num:], **call_kwargs)
             return func(*args, **kwargs)
         return call
