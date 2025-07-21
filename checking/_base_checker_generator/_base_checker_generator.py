@@ -253,6 +253,32 @@ abc_names = ['Container', 'Hashable', 'Iterable', 'Reversible', 'Generator', 'Si
 abcs = {name: Validator(capital_to_underscore(name), 'types', f'(collections.abc.{name},)',
                   docstring_description=f'is an instance of {a_or_an(name)} {name} (:external+python:py:class:`collections.abc.{name}`)') for name in abc_names}
 
+# Has
+has_attr = Validator('has_attr', 'validators', 'check_has_attr', docstring_description='has attribute `{0}`',
+                        parameters=[Parameter('attr', 'attr', 'str', 'The attribute to check for')],
+                        add_func='def check_has_attr(attr):\n\t'
+                                    'def checker(value):\n\t\t'
+                                    'if not hasattr(value, attr):\n\t\t\t'
+                                    'return ValueError(f"Value must have attribute {attr}")\n\t\t'
+                                    'return None\n\t'
+                                    'return checker')
+has_method = Validator('has_method', 'validators', 'check_has_method', docstring_description='has method `{0}`',
+                        parameters=[Parameter('method', 'method', 'str', 'The method to check for')],
+                        add_func='def check_has_method(method):\n\t'
+                                    'def checker(value):\n\t\t'
+                                    'if not hasattr(value, method) or not callable(getattr(value, method)):\n\t\t\t'
+                                    'return ValueError(f"Value must have method {method}")\n\t\t'
+                                    'return None\n\t'
+                                    'return checker')
+has_property = Validator('has_property', 'validators', 'check_has_property', docstring_description='has property `{0}`',
+                        parameters=[Parameter('property', 'property', 'str', 'The property to check for')],
+                        add_func='def check_has_property(property):\n\t'
+                                    'def checker(value):\n\t\t'
+                                    'if not hasattr(value, property) or not isinstance(getattr(value, property), property):\n\t\t\t'
+                                    'return ValueError(f"Value must have property {property}")\n\t\t'
+                                    'return None\n\t'
+                                    'return checker')
+
 # Numbers
 larger_values = [
     Validator(f'{name}_than', 'number_line', 'NumberLine.bigger_than_float', docstring_description=f'is {name} than `{{{0}}}`',
@@ -496,6 +522,9 @@ with open(out_loc, 'a') as file:
 
             validator = contains_type.fill_parameter_in_function('type_', type_name, replace_name)
             write_validator_name(file, [container, validator], name=f'{container.name}_of_{name}')
+
+    # Has
+    write_validators(file, [has_attr, has_method, has_property])
 
     # Strings
     write_validator_name(file, [types['str'], starts_with], name='starts_with')
