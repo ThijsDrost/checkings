@@ -99,7 +99,6 @@ class Validator:
             raise ValueError('No add_func to fill in')
         if param_name not in self.add_func:
             raise ValueError(f'Parameter {param_name} not found in add_func')
-        new_params = []
         params = [param.copy() for param in self.parameters]
         found = False
         docstring_description = self.docstring_description
