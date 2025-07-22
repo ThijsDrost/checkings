@@ -5,7 +5,13 @@ import warnings
 import collections  # noqa: F401
 import os  # noqa: F401
 
-import numpy as np  # noqa: F401
+try:
+    import numpy as np  # noqa: F401
+    HAS_NUMPY = True
+except ImportError:
+    np = None
+    HAS_NUMPY = False
+
 
 from ._no_val import NoValue
 from .number_line import NumberLine
