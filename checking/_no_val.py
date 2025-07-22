@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class NoVal:
-    __module__ = 'checking'
+    __module__ = "checking"
 
     def __iter__(self):
         return self
@@ -33,10 +33,10 @@ class NoVal:
         return True
 
     def __repr__(self):
-        return 'NoValue'
+        return "NoValue"
 
     def __str__(self):
-        return 'NoValue'
+        return "NoValue"
 
 
 NoValue = NoVal()

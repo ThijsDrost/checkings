@@ -21,13 +21,15 @@ class Bound:
         When the bound is infinity or minus infinity, the bound is always stored as inclusive to make the comparison easier. And
         thus infinity is equal to infinity and minus infinity is equal to minus infinity.
         """
-        if value == float('inf') or value == float('-inf'):
+        if value == float("inf") or value == float("-inf"):
             inclusive = True
         self.__attrs_init__(value, inclusive)
 
     def _smaller_or_eq(self, other) -> bool | NotImplemented:
         """Check if the bound value is smaller than the other value (takes into account inclusivity)"""
-        def less(first, second): return first < second
+
+        def less(first, second):
+            return first < second
 
         return self._compare(other, less)
 
@@ -42,12 +44,14 @@ class Bound:
         """
         comparison = self._smaller_or_eq(other)
         if comparison is NotImplemented:
-            raise TypeError(f'Cannot compare {self} with {other}')
+            raise TypeError(f"Cannot compare {self} with {other}")
         return comparison
 
     def _bigger_or_eq(self, other) -> bool | NotImplemented:
         """Check if the bound value is bigger than the other value (takes into account inclusivity)"""
-        def more(first, second): return first > second
+
+        def more(first, second):
+            return first > second
 
         return self._compare(other, more)
 
@@ -62,7 +66,7 @@ class Bound:
         """
         result = self._bigger_or_eq(other)
         if result is NotImplemented:
-            raise TypeError(f'Cannot compare {self} with {other}')
+            raise TypeError(f"Cannot compare {self} with {other}")
         return result
 
     def _compare(self, other, operator) -> bool | NotImplemented:
@@ -83,11 +87,11 @@ class Bound:
 
     @staticmethod
     def infinity() -> Bound:
-        return Bound(float('inf'), True)
+        return Bound(float("inf"), True)
 
     @staticmethod
     def minus_infinity() -> Bound:
-        return Bound(float('-inf'), True)
+        return Bound(float("-inf"), True)
 
 
 MinusInfinity = Bound.minus_infinity()
@@ -107,7 +111,9 @@ class Range:
         self.lower = lower
         self.upper = upper
         if _check and not self.lower.smaller_or_eq(self.upper):
-            raise ValueError(f'Lower bound ({self.lower.value}) cannot be bigger than upper bound ({self.upper.value})')
+            raise ValueError(
+                f"Lower bound ({self.lower.value}) cannot be bigger than upper bound ({self.upper.value})"
+            )
 
     def __contains__(self, item: int | float):
         smaller = self.lower._smaller_or_eq(item)
@@ -120,8 +126,15 @@ class Range:
 
     def __add__(self, other: Range) -> tuple[Range] | tuple[Range, Range]:
         if isinstance(other, Range):
-            if ((self.lower.value > other.upper.value) or (self.upper.value < other.lower.value)
-                    or (self.lower.value == other.upper.value and (not self.lower.inclusive) and (not other.upper.inclusive))):
+            if (
+                (self.lower.value > other.upper.value)
+                or (self.upper.value < other.lower.value)
+                or (
+                    self.lower.value == other.upper.value
+                    and (not self.lower.inclusive)
+                    and (not other.upper.inclusive)
+                )
+            ):
                 return self, other
 
             if self.lower.value < other.lower.value:
@@ -129,33 +142,49 @@ class Range:
             elif self.lower.value > other.lower.value:
                 lower_bound = other.lower
             else:
-                lower_bound = Bound(self.lower.value, self.lower.inclusive or other.lower.inclusive)
+                lower_bound = Bound(
+                    self.lower.value, self.lower.inclusive or other.lower.inclusive
+                )
 
             if self.upper.value > other.upper.value:
                 upper_bound = self.upper
             elif self.upper.value < other.upper.value:
                 upper_bound = other.upper
             else:
-                upper_bound = Bound(self.upper.value, self.upper.inclusive or other.upper.inclusive)
+                upper_bound = Bound(
+                    self.upper.value, self.upper.inclusive or other.upper.inclusive
+                )
 
-            return Range(lower_bound, upper_bound),
+            return (Range(lower_bound, upper_bound),)
         else:
             return NotImplemented
 
-    def __sub__(self, other: Range) -> tuple[Range] | tuple[Range, Range] | tuple[EmptyRange]:
+    def __sub__(
+        self, other: Range
+    ) -> tuple[Range] | tuple[Range, Range] | tuple[EmptyRange]:
         if isinstance(other, Range):
             lower_bound = Bound(other.lower.value, not other.lower.inclusive)
             upper_bound = Bound(other.upper.value, not other.upper.inclusive)
-            if self.lower.bigger_or_eq(upper_bound) or self.upper.smaller_or_eq(lower_bound):
-                return self,
-            elif self.lower.smaller_or_eq(lower_bound) and self.upper.bigger_or_eq(upper_bound):
+            if self.lower.bigger_or_eq(upper_bound) or self.upper.smaller_or_eq(
+                lower_bound
+            ):
+                return (self,)
+            elif self.lower.smaller_or_eq(lower_bound) and self.upper.bigger_or_eq(
+                upper_bound
+            ):
                 return Range(self.lower, lower_bound), Range(upper_bound, self.upper)
-            elif self.lower.smaller_or_eq(lower_bound) and self.upper.smaller_or_eq(other.upper):
-                return Range(self.lower, lower_bound),
-            elif self.lower.bigger_or_eq(other.lower) and self.upper.bigger_or_eq(upper_bound):
-                return Range(upper_bound, self.upper),
-            elif self.lower.bigger_or_eq(other.lower) and self.upper.smaller_or_eq(other.upper):
-                return EmptyRange,
+            elif self.lower.smaller_or_eq(lower_bound) and self.upper.smaller_or_eq(
+                other.upper
+            ):
+                return (Range(self.lower, lower_bound),)
+            elif self.lower.bigger_or_eq(other.lower) and self.upper.bigger_or_eq(
+                upper_bound
+            ):
+                return (Range(upper_bound, self.upper),)
+            elif self.lower.bigger_or_eq(other.lower) and self.upper.smaller_or_eq(
+                other.upper
+            ):
+                return (EmptyRange,)
             else:
                 assert_never("This should never happen")
         else:
@@ -167,16 +196,16 @@ class Range:
         return self.lower == other.lower and self.upper == other.upper
 
     def __repr__(self):
-        return f'Range({self.lower}, {self.upper})'
+        return f"Range({self.lower}, {self.upper})"
 
     def __str__(self):
-        lower = '('
+        lower = "("
         if self.lower.inclusive and self.lower.value != MinusInfinity.value:
-            lower = '['
-        upper = ')'
+            lower = "["
+        upper = ")"
         if self.upper.inclusive and self.upper.value != Infinity.value:
-            upper = ']'
-        return f'{lower}{self.lower.value}, {self.upper.value}{upper}'
+            upper = "]"
+        return f"{lower}{self.lower.value}, {self.upper.value}{upper}"
 
     @staticmethod
     def empty():
@@ -224,7 +253,9 @@ class NumberLine:
         elif isinstance(ranges, (list, tuple)):
             self.ranges = list(ranges)
         else:
-            raise TypeError(f'`NumberLine` can only be created with `Range` or `tuple` of `Range`, not {type(ranges).__name__}')
+            raise TypeError(
+                f"`NumberLine` can only be created with `Range` or `tuple` of `Range`, not {type(ranges).__name__}"
+            )
         if simplify:
             self.simplify()
 
@@ -242,7 +273,7 @@ class NumberLine:
                     self.ranges.pop(i)
                     break
 
-                for j, range2 in enumerate(self.ranges[i + 1:], i + 1):
+                for j, range2 in enumerate(self.ranges[i + 1 :], i + 1):
                     new_range = range1 + range2
                     if len(new_range) == 1:
                         self.ranges[i] = new_range
@@ -274,8 +305,11 @@ class NumberLine:
         """
         contains = self.__contains__(value)
         if contains is NotImplemented:
-            raise TypeError(f'Cannot check for type {type(value).__name__} in NumberLine, only int and float are allowed')
+            raise TypeError(
+                f"Cannot check for type {type(value).__name__} in NumberLine, only int and float are allowed"
+            )
         return contains
+
     contains = check
 
     def raise_check(self, value):
@@ -311,26 +345,38 @@ class NumberLine:
         if not self.check(value):
             if len(self.ranges) == 1:
                 if self.ranges[0].lower == MinusInfinity:
-                    or_equal = 'or equal to ' if self.ranges[0].upper.inclusive else ''
-                    return ValueError(f'{value} should be smaller than {or_equal}{self.ranges[0].upper.value}')
+                    or_equal = "or equal to " if self.ranges[0].upper.inclusive else ""
+                    return ValueError(
+                        f"{value} should be smaller than {or_equal}{self.ranges[0].upper.value}"
+                    )
                 elif self.ranges[0].upper == Infinity:
-                    or_equal = 'or equal to ' if self.ranges[0].lower.inclusive else ''
-                    return ValueError(f'{value} should be bigger than {or_equal}{self.ranges[0].lower.value}')
+                    or_equal = "or equal to " if self.ranges[0].lower.inclusive else ""
+                    return ValueError(
+                        f"{value} should be bigger than {or_equal}{self.ranges[0].lower.value}"
+                    )
                 else:
-                    return ValueError(f'{value} should be in the range {self.ranges[0]}')
-            return ValueError(f'{value} should be in: {self}')
+                    return ValueError(
+                        f"{value} should be in the range {self.ranges[0]}"
+                    )
+            return ValueError(f"{value} should be in: {self}")
 
-    def __add__(self, other: NumberLine | Range | int | float) -> NumberLine | NotImplemented:
+    def __add__(
+        self, other: NumberLine | Range | int | float
+    ) -> NumberLine | NotImplemented:
         if isinstance(other, NumberLine):
             return NumberLine(self.ranges + other.ranges)
         elif isinstance(other, Range):
             return NumberLine(self.ranges + [other])
         elif isinstance(other, (int, float)):
-            return NumberLine(self.ranges + [Range(Bound(other, True), Bound(other, True))])
+            return NumberLine(
+                self.ranges + [Range(Bound(other, True), Bound(other, True))]
+            )
         else:
             return NotImplemented
 
-    def __sub__(self, other: NumberLine | Range | int | float) -> NumberLine | NotImplemented:
+    def __sub__(
+        self, other: NumberLine | Range | int | float
+    ) -> NumberLine | NotImplemented:
         def subtract_range(_ranges, range_):
             new_ranges = []
             for _range in _ranges:
@@ -349,8 +395,12 @@ class NumberLine:
         elif isinstance(other, Range):
             return NumberLine(subtract_range(self.ranges, other), simplify=False)
         elif isinstance(other, (int, float)):
-            return NumberLine(subtract_range(self.ranges, Range(Bound(other, True), Bound(other, True))),
-                              simplify=False)
+            return NumberLine(
+                subtract_range(
+                    self.ranges, Range(Bound(other, True), Bound(other, True))
+                ),
+                simplify=False,
+            )
         else:
             return NotImplemented
 
@@ -365,16 +415,18 @@ class NumberLine:
         return bool(self.ranges)
 
     def __repr__(self):
-        return f'NumberLine({self.ranges})'
+        return f"NumberLine({self.ranges})"
 
     def __str__(self):
-        return f'NumberLine({', '.join(str(range_) for range_ in self.ranges)})'
+        return f"NumberLine({', '.join(str(range_) for range_ in self.ranges)})"
 
     def __invert__(self):
         return NumberLine.full() - self
 
     @staticmethod
-    def include_from_floats(start=float('-inf'), end=float('inf'), start_inclusive=True, end_inclusive=True):
+    def include_from_floats(
+        start=float("-inf"), end=float("inf"), start_inclusive=True, end_inclusive=True
+    ):
         """
         Create a number line including all values between the `start` and `end` value.
 
@@ -393,7 +445,10 @@ class NumberLine:
         -------
         NumberLine
         """
-        return NumberLine.include(Bound(start, start_inclusive), Bound(end, end_inclusive))
+        return NumberLine.include(
+            Bound(start, start_inclusive), Bound(end, end_inclusive)
+        )
+
     between_from_floats = include_from_floats
 
     @staticmethod
@@ -435,12 +490,17 @@ class NumberLine:
         NumberLine
         """
         if start.bigger_or_eq(end):
-            raise ValueError(f'Start value ({start.value}) cannot be bigger than end value ({end.value})')
+            raise ValueError(
+                f"Start value ({start.value}) cannot be bigger than end value ({end.value})"
+            )
         return NumberLine(Range(start, end))
+
     between = include
 
     @staticmethod
-    def include_float(start: float, end: float, start_inclusive=True, end_inclusive=True):
+    def include_float(
+        start: float, end: float, start_inclusive=True, end_inclusive=True
+    ):
         """
         Create a number line including all values between the `start` and `end` value.
 
@@ -459,7 +519,10 @@ class NumberLine:
         -------
         NumberLine
         """
-        return NumberLine.include(Bound(start, start_inclusive), Bound(end, end_inclusive))
+        return NumberLine.include(
+            Bound(start, start_inclusive), Bound(end, end_inclusive)
+        )
+
     between_float = include_float
 
     @staticmethod
@@ -539,14 +602,19 @@ class NumberLine:
         NumberLine
         """
         if start.bigger_or_eq(end):
-            raise ValueError(f'Start value ({start.value}) cannot be bigger than end value ({end.value})')
+            raise ValueError(
+                f"Start value ({start.value}) cannot be bigger than end value ({end.value})"
+            )
         if start == MinusInfinity and end == Infinity:
             return NumberLine.empty()
         return NumberLine([Range(MinusInfinity, start), Range(end, Infinity)])
+
     outside = exclude
 
     @staticmethod
-    def exclude_from_floats(start=float('-inf'), end=float('inf'), start_inclusive=True, end_inclusive=True):
+    def exclude_from_floats(
+        start=float("-inf"), end=float("inf"), start_inclusive=True, end_inclusive=True
+    ):
         """
         Create a number line excluding all values between the `start` and `end` value.
 
@@ -561,7 +629,10 @@ class NumberLine:
         -------
         NumberLine
         """
-        return NumberLine.exclude(Bound(start, start_inclusive), Bound(end, end_inclusive))
+        return NumberLine.exclude(
+            Bound(start, start_inclusive), Bound(end, end_inclusive)
+        )
+
     outside_from_floats = exclude_from_floats
 
     @staticmethod
@@ -595,4 +666,3 @@ class NumberLine:
         NumberLine
         """
         return NumberLine.smaller_than_float(0, include_zero)
-

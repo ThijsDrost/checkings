@@ -11,12 +11,12 @@ class Descriptor(BaseChecker):
 
         # Set the name to default, so that the error message is more informative if the default value is not valid.
         if self._default is not NoValue:
-            self._validate(self._default, f'Default value for `{name}`')
+            self._validate(self._default, f"Default value for `{name}`")
         self._update()
 
         self.owner = owner
         self.name = name
-        self.private_name = f'_{name}'
+        self.private_name = f"_{name}"
 
     def __get__(self, instance, owner=None):
         if instance is None:
@@ -38,8 +38,10 @@ class Descriptor(BaseChecker):
         if value is NoValue or ((value is None) and self._replace_none):
             value = self._get_default()
             if value is NoValue:
-                raise ValueError(f'No value given and no default value for `{self.name}`')
-            self._validate(value, f'default value for `{self.name}`')
+                raise ValueError(
+                    f"No value given and no default value for `{self.name}`"
+                )
+            self._validate(value, f"default value for `{self.name}`")
         else:
             if self._converter is not NoValue:
                 value = self._converter(value)
