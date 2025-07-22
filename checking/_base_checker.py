@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import Callable, Self
-import warnings
 import collections  # noqa: F401
 import os  # noqa: F401
+import warnings
+from collections.abc import Callable
+from typing import Self
 
 try:
-    import numpy as np  # noqa: F401
+    import numpy as np
 
     HAS_NUMPY = True
 except ImportError:
@@ -53,13 +54,14 @@ class BaseChecker:
             if (not isinstance(value, tuple)) and (value is not NoValue):
                 if isinstance(value, type_):
                     return (value,)
-                else:
-                    raise TypeError(f"`{name}` must be a tuple")
+                msg = f"`{name}` must be a tuple"
+                raise TypeError(msg)
             return value
 
         def check_type[T](value: T, type_, name) -> T:
             if (not isinstance(value, type_)) and (value is not NoValue):
-                raise TypeError(f"`{name}` must be a {type_.__name__}")
+                msg = f"`{name}` must be a {type_.__name__}"
+                raise TypeError(msg)
             return value
 
         if not isinstance(literals, tuple | type(NoValue)):
@@ -74,64 +76,63 @@ class BaseChecker:
         self._replace_none = replace_none
 
     def _update(self):
-        if self._number_line is not NoValue:
-            if not self._number_line:
-                raise ValueError("Number line is empty")
+        if (self._number_line is not NoValue) and (not self._number_line):
+                msg = "Number line is empty"
+                raise ValueError(msg)
         if self._literals is not NoValue:
             # To keep the order of the literals, we need to do it this way instead of using a set
             self._literals = tuple(
-                (
+
                     self._literals[i]
                     for i in range(len(self._literals))
                     if self._literals[i] not in self._literals[:i]
-                )
+
             )
             if not self._literals:
-                raise ValueError("Literals are empty")
+                msg = "Literals are empty"
+                raise ValueError(msg)
         if self._types is not NoValue:
             self._types = tuple(set(self._types))
             if not self._types:
-                raise ValueError("Types are empty")
+                msg = "Types are empty"
+                raise ValueError(msg)
 
             if self._literals is not NoValue:
                 old_len = len(self._literals)
                 self._literals = tuple(
-                    (
                         literal
                         for literal in self._literals
                         if isinstance(literal, self._types)
-                    )
                 )
                 if not self._literals:
-                    raise ValueError("No literals are of the required type")
+                    msg = "No literals are of the required type"
+                    raise ValueError(msg)
                 if len(self._literals) != old_len:
                     warnings.warn(
-                        "Some literals are not of the required type, they are removed from `literals`"
+                        "Some literals are not of the required type, they are removed from `literals`",
                     )
 
                 old_len = len(self._types)
                 self._types = tuple(
-                    (
                         t
                         for t in self._types
                         if any(isinstance(literal, t) for literal in self._literals)
-                    )
                 )
                 if old_len != len(self._types):
                     warnings.warn(
-                        "Some types are not present in `literals`, they are removed from `types`"
+                        "Some types are not present in `literals`, they are removed from `types`",
                     )
 
-            if self._number_line is not NoValue:
-                if (int not in self._types) and (float not in self._types):
+            if (self._number_line is not NoValue) and (int not in self._types) and (float not in self._types):
                     self._number_line = NoValue
                     warnings.warn(
-                        "number_line` is not used because `types` does not contain `int` or `float`"
+                        "number_line` is not used because `types` does not contain `int` or `float`",
                     )
 
     def __add__(self, other: Self) -> Self:
         if not isinstance(other, self.__class__):
-            raise TypeError(f"Cannot add {type(other)} to {self.__class__}")
+            msg = f"Cannot add {type(other)} to {self.__class__}"
+            raise TypeError(msg)
 
         def add_values(a, b, name):
             if a is not NoValue:
@@ -170,16 +171,15 @@ class BaseChecker:
             else:
                 return ValueError(
                     f"Value ({type(value)}) must be one of the following types:"
-                    f" {self._tuple_str([t.__name__ for t in self._types])}"
+                    f" {self._tuple_str([t.__name__ for t in self._types])}",
                 )
         return None
 
     def _check_literal(self, value):
-        if self._literals is not NoValue:
-            if value not in self._literals:
-                return ValueError(
-                    f"Value ({value}) must be one of the following: {self._tuple_str(self._literals)}"
-                )
+        if (self._literals is not NoValue) and (value not in self._literals):
+            return ValueError(
+                f"Value ({value}) must be one of the following: {self._tuple_str(self._literals)}",
+            )
         return None
 
     def _check_number_line(self, value):
@@ -190,14 +190,14 @@ class BaseChecker:
     def _check_validators(self, value):
         if self._validators is not NoValue:
             errors = []
-            for index, validator in enumerate(self._validators):
+            for validator in self._validators:
                 try:
                     message = validator(value)
-                except BaseException as e:
+                except BaseException as e:  # noqa: BLE001
                     errors.append(
                         ValueError(
-                            f"Validator named {validator.__name__} raised an exception: {e}"
-                        )
+                            f"Validator named {validator.__name__} raised an exception: {e}",
+                        ),
                     )
                 else:
                     errors.append(message)
@@ -220,7 +220,8 @@ class BaseChecker:
         if val_err:
             errs.append(val_err)
         if errs:
-            raise ExceptionGroup(f"{name} has incorrect value: {value}", errs)
+            msg = f"{name} has incorrect value: {value}"
+            raise ExceptionGroup(msg, errs)
 
     @staticmethod
     def _tuple_str(values):
@@ -241,8 +242,9 @@ class BaseChecker:
         if hasattr(self._default, "__setitem__") or hasattr(self._default, "set"):
             try:
                 return self._default.copy()
-            except AttributeError:
-                raise ValueError("If default is mutable, it must have a `copy` method")
+            except AttributeError as e:
+                msg = "If default is mutable, it must have a `copy` method"
+                raise ValueError(msg) from e
         else:
             return self._default
 
@@ -1937,7 +1939,7 @@ def check_sorted():
     def checker(value):
         def value_error(wrong):
             return ValueError(
-                f"Value must be sorted, goes wrong at index{'es' if len(wrong) > 1 else ''} {wrong}"
+                f"Value must be sorted, goes wrong at index{'es' if len(wrong) > 1 else ''} {wrong}",
             )
         if HAS_NUMPY:  
             if isinstance(value, np.ndarray):  
@@ -1945,10 +1947,9 @@ def check_sorted():
                 if not np.all(values):  
                     wrong = np.argwhere(~values)[:, 0]  
                     return value_error(wrong)
-        else:
-            if all(value[i] <= value[i + 1] for i in range(len(value) - 1)):
-                wrong = [i for i in range(len(value) - 1) if value[i] > value[i + 1]]
-                return value_error(wrong)
+        elif all(value[i] <= value[i + 1] for i in range(len(value) - 1)):
+            wrong = [i for i in range(len(value) - 1) if value[i] > value[i + 1]]
+            return value_error(wrong)
         return None
     return checker
 
@@ -1961,13 +1962,12 @@ def check_inside_type(type_):
                     errors.append(f"value at {index} is of type {type(val)}")
             if len(errors) == 1:
                 return ValueError(
-                    f"Value must contain only values of type {type_}. Error: {errors[0]}"
+                    f"Value must contain only values of type {type_}. Error: {errors[0]}",
                 )
-            else:
-                return ValueError(
-                    f"Value must contain only values of type {type_}. Errors:"
-                    f" {', '.join(errors[:-1])}, and {errors[-1]}"
-                )
+            return ValueError(
+                f"Value must contain only values of type {type_}. Errors:"
+                f" {', '.join(errors[:-1])}, and {errors[-1]}",
+            )
         return None
     return checker
 
