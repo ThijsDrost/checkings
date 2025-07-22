@@ -76,7 +76,7 @@ class Validator:
                             elif ((validators[index].parameters[index_p].name[-1] != '1' and
                                    validators[index].parameters[index_p].name[-1].isdigit())
                                   or validators[index2].parameters[index_p2].name[-1].isdigit()):
-                                raise ValueError(f'Something went wrong')
+                                raise ValueError('Something went wrong')
 
                             if num == 1:
                                 validators[index].parameters[index_p].name += str(num)
@@ -422,7 +422,7 @@ file_val = Validator('file', 'validators', 'check_file', docstring_description='
                      add_func='def check_file():\n\t'
                               'def checker(value):\n\t\t'
                               'if not os.path.isfile(value):\n\t\t\t'
-                              'return ValueError(f"Path is not a file")\n\t\t'
+                              'return ValueError(f"Path `{value}` is not a file")\n\t\t'
                               'return None\n\t'
                               'return checker')
 
