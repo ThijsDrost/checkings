@@ -24,7 +24,20 @@ testpaths = [
 [tool.ruff]
 line-length = 120
 indent-width = 4
-exclude = ["_base_checker.py"]
+exclude = [
+    "_base_checker.py",
+    "tests",
+]
 
 [tool.ruff.lint]
-select = ["E", "F"]
+select = ["ALL"]
+ignore = [
+    "FBT002",
+    "FBT003",
+    "ANN001",
+    "ANN205",
+    "TRY003",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from ._no_val import NoValue
+from typing import Self
+
 from ._base_checker import BaseChecker
+from ._no_val import NoValue
 
 
 class Descriptor(BaseChecker):
@@ -25,7 +27,7 @@ class Descriptor(BaseChecker):
             return getattr(instance, self.private_name, self._default)
         return getattr(instance, self.private_name)
 
-    def __set__(self, instance, value):
+    def __set__(self, instance, value) -> Self | None:
         if instance is None:
             return self
 
@@ -38,12 +40,12 @@ class Descriptor(BaseChecker):
         if value is NoValue or ((value is None) and self._replace_none):
             value = self._get_default()
             if value is NoValue:
-                raise ValueError(
-                    f"No value given and no default value for `{self.name}`"
-                )
+                msg = f"No value given and no default value for `{self.name}`"
+                raise ValueError(msg)
             self._validate(value, f"default value for `{self.name}`")
         else:
             if self._converter is not NoValue:
                 value = self._converter(value)
             self._validate(value, self.name)
         setattr(instance, self.private_name, value)
+        return None

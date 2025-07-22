@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, KW_ONLY
-from collections.abc import Sequence, Iterable
-from typing import Callable
-import shutil
+import inspect
 import itertools
 import os
-import pathlib
-import inspect
+import shutil
+from collections.abc import Callable, Iterable, Sequence
+from dataclasses import KW_ONLY, dataclass
 
 from checking._no_val import NoValue
-
 
 VALIDATOR_FUNCS = {}
 
@@ -63,7 +60,7 @@ class Validator:
                 if self.parameters[index].name is None:
                     continue
                 description = description.replace(
-                    f"{{{index}}}", self.parameters[index].name
+                    f"{{{index}}}", self.parameters[index].name,
                 )
         return description
 
@@ -81,20 +78,18 @@ class Validator:
                             if (
                                 validators[index].parameters[index_p].name[-1].isdigit()
                                 and validators[index2]
-                                .parameters[index_p2]
-                                .name[-1]
-                                .isdigit()
+                                        .parameters[index_p2]
+                                        .name[-1]
+                                        .isdigit()
                             ):
                                 continue
-                            elif (
+                            if (
                                 validators[index].parameters[index_p].name[-1] != "1"
                                 and validators[index]
-                                .parameters[index_p]
-                                .name[-1]
-                                .isdigit()
-                            ) or validators[index2].parameters[index_p2].name[
-                                -1
-                            ].isdigit():
+                                        .parameters[index_p]
+                                        .name[-1]
+                                        .isdigit()
+                                    ) or validators[index2].parameters[index_p2].name[-1].isdigit():
                                 raise ValueError("Something went wrong")
 
                             if num == 1:
@@ -119,14 +114,16 @@ class Validator:
         )
 
     def fill_parameter_in_function(
-        self, param_name: str, value: str, name: str = None
+        self, param_name: str, value: str, name: str | None = None,
     ) -> Validator:
         if name is None:
             name = value
         if self.add_func is None:
-            raise ValueError("No add_func to fill in")
+            msg = "No add_func to fill in"
+            raise ValueError(msg)
         if param_name not in self.add_func:
-            raise ValueError(f"Parameter {param_name} not found in add_func")
+            msg = f"Parameter {param_name} not found in add_func"
+            raise ValueError(msg)
         params = [param.copy() for param in self.parameters]
         found = False
         docstring_description = self.docstring_description
@@ -136,20 +133,21 @@ class Validator:
                 param.name = None
                 param.call_value = value
                 docstring_description = docstring_description.replace(
-                    f"{{{index}}}", name
+                    f"{{{index}}}", name,
                 )
                 params[index] = param
         if not found:
-            raise ValueError(f"Parameter {param_name} not found in parameters")
+            msg = f"Parameter {param_name} not found in parameters"
+            raise ValueError(msg)
         add_func = "\n".join(
-            (
+
                 (
                     line.replace(param_name, "")
                     if "def" in line
                     else line.replace(param_name, value)
                 )
                 for line in self.add_func.split("\n")
-            )
+
         )
         return Validator(
             self.name,
@@ -178,7 +176,7 @@ def make_checker(validators: Sequence[Validator], prefix=""):
     parameters.sort(key=lambda x: x.default is not NoValue)
 
     parameter_string = ", ".join(
-        [param_str(param) for param in parameters if param.name is not None]
+        [param_str(param) for param in parameters if param.name is not None],
     )
     if parameter_string:
         parameter_string = ", " + parameter_string
@@ -199,7 +197,7 @@ def make_checker(validators: Sequence[Validator], prefix=""):
             [
                 validator.get_docstring_description()
                 for validator in description_validators
-            ]
+            ],
         )
 
     if "default" in [validator.param_name for validator in validators]:
@@ -217,7 +215,7 @@ def make_checker(validators: Sequence[Validator], prefix=""):
         return first_line
 
     parameter_description = "\n".join(
-        [param_description(param) for param in parameters if param.name is not None]
+        [param_description(param) for param in parameters if param.name is not None],
     )
 
     def call_str(validator: Validator):
@@ -241,9 +239,6 @@ def make_checker(validators: Sequence[Validator], prefix=""):
     call_string = " + ".join([call_str(validator) for validator in validators])
 
     add_func = ""
-    # for validator in validators:
-    #     if validator.add_func is not None:
-    #         add_func += f'\n\t\t{validator.add_func}\n'
 
     parameters_header = ""
     if parameter_description:
@@ -269,7 +264,7 @@ def make_checker(validators: Sequence[Validator], prefix=""):
 
 def capital_to_underscore(name):
     return "".join(
-        [(x if x.islower() else "_" + x.lower()) for x in name]
+        [(x if x.islower() else "_" + x.lower()) for x in name],
     ).removeprefix("_")
 
 
@@ -281,7 +276,7 @@ def a_or_an(word):
 
 # Types
 _integer_val = Validator(
-    "integer", "types", "(int,)", docstring_description="is an instance of an integer"
+    "integer", "types", "(int,)", docstring_description="is an instance of an integer",
 )
 _number_val = Validator(
     "number",
@@ -290,7 +285,7 @@ _number_val = Validator(
     docstring_description="is an instance of a number",
 )
 _string_val = Validator(
-    "string", "types", "(str,)", docstring_description="is an instance of a string"
+    "string", "types", "(str,)", docstring_description="is an instance of a string",
 )
 _dictionary_val = Validator(
     "dictionary",
@@ -326,13 +321,12 @@ def check_inside_type(type_):
 
             if len(errors) == 1:
                 return ValueError(
-                    f"Value must contain only values of type {type_}. Error: {errors[0]}"
+                    f"Value must contain only values of type {type_}. Error: {errors[0]}",
                 )
-            else:
-                return ValueError(
-                    f"Value must contain only values of type {type_}. Errors:"
-                    f" {', '.join(errors[:-1])}, and {errors[-1]}"
-                )
+            return ValueError(
+                f"Value must contain only values of type {type_}. Errors:"
+                f" {', '.join(errors[:-1])}, and {errors[-1]}",
+            )
         return None
 
     return checker
@@ -474,7 +468,7 @@ positive = Validator(
             "include_zero",
             "bool",
             "Whether the value is allowed to be equal to zero",
-        )
+        ),
     ],
 )
 negative = Validator(
@@ -487,7 +481,7 @@ negative = Validator(
             "include_zero",
             "bool",
             "Whether the value is allowed to be equal to zero",
-        )
+        ),
     ],
 )
 in_range = Validator(
@@ -777,7 +771,7 @@ literals = Validator(
             "literals",
             "collections.abc.Sequence",
             "The literals to check against",
-        )
+        ),
     ],
 )
 
@@ -786,7 +780,7 @@ def check_sorted():
     def checker(value):
         def value_error(wrong):
             return ValueError(
-                f"Value must be sorted, goes wrong at index{'es' if len(wrong) > 1 else ''} {wrong}"
+                f"Value must be sorted, goes wrong at index{'es' if len(wrong) > 1 else ''} {wrong}",
             )
 
         if HAS_NUMPY:  # noqa: F821
@@ -795,10 +789,9 @@ def check_sorted():
                 if not np.all(values):  # noqa: F821
                     wrong = np.argwhere(~values)[:, 0]  # noqa: F821
                     return value_error(wrong)
-        else:
-            if all(value[i] <= value[i + 1] for i in range(len(value) - 1)):
-                wrong = [i for i in range(len(value) - 1) if value[i] > value[i + 1]]
-                return value_error(wrong)
+        elif all(value[i] <= value[i + 1] for i in range(len(value) - 1)):
+            wrong = [i for i in range(len(value) - 1) if value[i] > value[i + 1]]
+            return value_error(wrong)
         return None
 
     return checker
@@ -847,28 +840,27 @@ def write_funcs(file_handle):
     for func in VALIDATOR_FUNCS.values():
         if isinstance(func, str):
             # Remove '# noqa: F821' from functions.
-            # noqa: F821 is needed in the generator, since the validator functions may use variables from the stub file,
+
             # but the checks are wanted in the generated file
-            func = func.replace("# noqa: F821", "")
+            new_func = func.replace("# noqa: F821", "")
             # Replace tabs with spaces
-            func = func.replace("\t", " " * 4)
-            file_handle.write(remove_indentation(func))
+            new_func = new_func.replace("\t", " " * 4)
+            file_handle.write(remove_indentation(new_func))
             file_handle.write("\n\n")
 
 
-path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = os.path.realpath(__file__).parent
 stub_loc = os.path.join(path, "_base_checker_stub.py")
 out_loc = os.path.join(path.parent, "_base_checker.py")
 stub_str = shutil.copy(stub_loc, out_loc)
 with open(out_loc, "a") as file:
     # Default
     write_validators(file, [default])
-    # make_combinations(file, [default], numbers.values())
     make_combinations(file, [default], types.values())
 
     # Numeric
     make_combinations(
-        file, numbers.values(), larger_values + less_values + [in_range, between]
+        file, numbers.values(), larger_values + less_values + [in_range, between],
     )
     make_combinations(file, [positive, negative], numbers.values())
     for validator in (
@@ -884,7 +876,7 @@ with open(out_loc, "a") as file:
     write_validators(file, abcs.values(), prefix="is_")
     for container in [types["list"], types["tuple"], abcs["Sequence"]]:
         write_validator_name(
-            file, [container, contains_type], name=f"{container.name}_of"
+            file, [container, contains_type], name=f"{container.name}_of",
         )
         for type_ in types.values():
             name = type_.name
@@ -897,10 +889,10 @@ with open(out_loc, "a") as file:
             )
 
             validator = contains_type.fill_parameter_in_function(
-                "type_", type_name, replace_name
+                "type_", type_name, replace_name,
             )
             write_validator_name(
-                file, [container, validator], name=f"{container.name}_of_{name}"
+                file, [container, validator], name=f"{container.name}_of_{name}",
             )
 
     # Has
@@ -922,10 +914,10 @@ with open(out_loc, "a") as file:
     # Sequence length
     for validator in [abcs["Sequence"], types["list"], types["tuple"], numpy_array]:
         write_validator_name(
-            file, [validator, length], name=f"{validator.name}_of_length"
+            file, [validator, length], name=f"{validator.name}_of_length",
         )
         write_validator_name(
-            file, [validator, lengths], name=f"{validator.name}_between_lengths"
+            file, [validator, lengths], name=f"{validator.name}_between_lengths",
         )
 
     # Paths
@@ -956,7 +948,6 @@ with open(out_loc, "a") as file:
         sorted_val,
         numpy_subdtype,
     ]
-    # write_funcs(validator_funcs, file)
     write_funcs(file)
 
 # %%

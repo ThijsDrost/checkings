@@ -39,11 +39,7 @@ class _DirectCallMeta(type):
 
                 if parameters_start:
                     before = "\n".join(split_docs[:index])
-
-                    if index == len(split_docs):
-                        after = ""
-                    else:
-                        after = "\n".join(split_docs[index:])
+                    after = "" if index == len(split_docs) else "\n".join(split_docs[index:])
                     new_docs = before + "\n" + inspect.cleandoc(value) + "\n" + after
 
                 else:
@@ -94,7 +90,7 @@ class _DirectCallMeta(type):
         -------
             callable | None
         """
-        parameters = [p for p in inspect.signature(func).parameters.values()]
+        parameters = list(inspect.signature(func).parameters.values())
 
         min_args = 0
         min_kwargs = 0
@@ -102,9 +98,8 @@ class _DirectCallMeta(type):
         num_parameters = len(parameters)
         for p in parameters:
             if p.kind == p.VAR_POSITIONAL:
-                raise ValueError(
-                    f"Cannot use `*args` for {func.__name__}, since the number of parameters must be fixed."
-                )
+                msg = f"Cannot use `*args` for {func.__name__}, since the number of parameters must be fixed."
+                raise ValueError(msg)
             if p.kind == p.VAR_KEYWORD:
                 num_parameters -= 1
                 continue
@@ -120,10 +115,11 @@ class _DirectCallMeta(type):
 
         parameters_names = tuple(par.name for par in parameters)
         if ("name" in parameters_names) or ("value" in parameters_names):
-            raise ValueError(
+            msg = (
                 f"Cannot have `name` or `value` as a parameter name for {func.__name__},"
-                f" since these are used for the call method."
+                f" since these are used for the call method.",
             )
+            raise ValueError(msg)
 
         def call(*args, **kwargs):
             nonlocal min_args, min_kwargs, argkwargs
@@ -149,10 +145,10 @@ class _DirectCallMeta(type):
             if call_together:
                 if len(args) < num + min_args + len(argkwargs):
                     num_missing = num + min_args + len(argkwargs) - len(args)
-                    raise TypeError(
-                        f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''}"
-                        f" (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call)."
-                    )
+                    msg = \
+                        (f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''}"
+                         f" (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call).")
+                    raise TypeError(msg)
 
                 return func(*args[:-num], **kwargs)(*args[-num:], **call_kwargs)
             return func(*args, **kwargs)
@@ -169,6 +165,7 @@ class Validator(BaseChecker, metaclass=_DirectCallMeta):
                 value = default
                 name = f"`default of {name}`"
             else:
-                raise ValueError(f"No value given and no default value for `{name}`")
+                msg = f"No value given and no default value for `{name}`"
+                raise ValueError(msg)
         self._validate(value, name)
         return value
