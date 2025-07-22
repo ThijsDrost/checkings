@@ -61,7 +61,8 @@ class Validator:
                 if self.parameters[index].name is None:
                     continue
                 description = description.replace(
-                    f"{{{index}}}", self.parameters[index].name,
+                    f"{{{index}}}",
+                    self.parameters[index].name,
                 )
         return description
 
@@ -72,25 +73,16 @@ class Validator:
                 num = 1
                 for index2 in range(len(validators[index + 1 :])):
                     for index_p2 in range(len(validators[index2].parameters)):
-                        if (
-                            validators[index].parameters[index_p].name
-                            == validators[index2].parameters[index_p2].name
-                        ):
+                        if validators[index].parameters[index_p].name == validators[index2].parameters[index_p2].name:
                             if (
                                 validators[index].parameters[index_p].name[-1].isdigit()
-                                and validators[index2]
-                                        .parameters[index_p2]
-                                        .name[-1]
-                                        .isdigit()
+                                and validators[index2].parameters[index_p2].name[-1].isdigit()
                             ):
                                 continue
                             if (
                                 validators[index].parameters[index_p].name[-1] != "1"
-                                and validators[index]
-                                        .parameters[index_p]
-                                        .name[-1]
-                                        .isdigit()
-                                    ) or validators[index2].parameters[index_p2].name[-1].isdigit():
+                                and validators[index].parameters[index_p].name[-1].isdigit()
+                            ) or validators[index2].parameters[index_p2].name[-1].isdigit():
                                 raise ValueError("Something went wrong")
 
                             if num == 1:
@@ -115,7 +107,10 @@ class Validator:
         )
 
     def fill_parameter_in_function(
-        self, param_name: str, value: str, name: str | None = None,
+        self,
+        param_name: str,
+        value: str,
+        name: str | None = None,
     ) -> Validator:
         if name is None:
             name = value
@@ -134,21 +129,16 @@ class Validator:
                 param.name = None
                 param.call_value = value
                 docstring_description = docstring_description.replace(
-                    f"{{{index}}}", name,
+                    f"{{{index}}}",
+                    name,
                 )
                 params[index] = param
         if not found:
             msg = f"Parameter {param_name} not found in parameters"
             raise ValueError(msg)
         add_func = "\n".join(
-
-                (
-                    line.replace(param_name, "")
-                    if "def" in line
-                    else line.replace(param_name, value)
-                )
-                for line in self.add_func.split("\n")
-
+            (line.replace(param_name, "") if "def" in line else line.replace(param_name, value))
+            for line in self.add_func.split("\n")
         )
         return Validator(
             self.name,
@@ -168,12 +158,8 @@ def make_checker(validators: Sequence[Validator], prefix=""):
             return f"{param.name}: {param.type}"
         return f"{param.name}: {param.type} = {param.default}"
 
-    param_validators = [
-        validator for validator in validators if validator.parameters is not None
-    ]
-    parameters = [
-        param for validator in param_validators for param in validator.parameters
-    ]
+    param_validators = [validator for validator in validators if validator.parameters is not None]
+    parameters = [param for validator in param_validators for param in validator.parameters]
     parameters.sort(key=lambda x: x.default is not NoValue)
 
     parameter_string = ", ".join(
@@ -182,23 +168,20 @@ def make_checker(validators: Sequence[Validator], prefix=""):
     if parameter_string:
         parameter_string = ", " + parameter_string
 
-    description_validators = [
-        validator for validator in validators if validator.param_name != "default"
-    ]
+    description_validators = [validator for validator in validators if validator.param_name != "default"]
     description = "Check if the value "
     if len(description_validators) == 0:
         description = ""
     elif len(description_validators) == 1:
         description += description_validators[0].get_docstring_description()
     elif len(description_validators) == 2:
-        description += (f"{description_validators[0].get_docstring_description()} "
-                        f"and {description_validators[1].get_docstring_description()}")
+        description += (
+            f"{description_validators[0].get_docstring_description()} "
+            f"and {description_validators[1].get_docstring_description()}"
+        )
     else:
         description += ", and ".join(
-            [
-                validator.get_docstring_description()
-                for validator in description_validators
-            ],
+            [validator.get_docstring_description() for validator in description_validators],
         )
 
     if "default" in [validator.param_name for validator in validators]:
@@ -277,7 +260,10 @@ def a_or_an(word):
 
 # Types
 _integer_val = Validator(
-    "integer", "types", "(int,)", docstring_description="is an instance of an integer",
+    "integer",
+    "types",
+    "(int,)",
+    docstring_description="is an instance of an integer",
 )
 _number_val = Validator(
     "number",
@@ -286,7 +272,10 @@ _number_val = Validator(
     docstring_description="is an instance of a number",
 )
 _string_val = Validator(
-    "string", "types", "(str,)", docstring_description="is an instance of a string",
+    "string",
+    "types",
+    "(str,)",
+    docstring_description="is an instance of a string",
 )
 _dictionary_val = Validator(
     "dictionary",
@@ -325,8 +314,7 @@ def check_inside_type(type_):
                     f"Value must contain only values of type {type_}. Error: {errors[0]}",
                 )
             return ValueError(
-                f"Value must contain only values of type {type_}. Errors:"
-                f" {', '.join(errors[:-1])}, and {errors[-1]}",
+                f"Value must contain only values of type {type_}. Errors: {', '.join(errors[:-1])}, and {errors[-1]}",
             )
         return None
 
@@ -375,8 +363,7 @@ abcs = {
         capital_to_underscore(name),
         "types",
         f"(collections.abc.{name},)",
-        docstring_description =
-            f"is an instance of {a_or_an(name)} {name} (:external+python:py:class:`collections.abc.{name}`)",
+        docstring_description=f"is an instance of {a_or_an(name)} {name} (:external+python:py:class:`collections.abc.{name}`)",
     )
     for name in abc_names
 }
@@ -538,8 +525,7 @@ non_zero = Validator(
     "number_line",
     "non_zero",
     docstring_description="is not zero",
-    add_func="def non_zero():\n\t"
-    "return NumberLine.exclude_from_floats(0, 0, False, False)",
+    add_func="def non_zero():\n\treturn NumberLine.exclude_from_floats(0, 0, False, False)",
 )
 even = Validator(
     "even",
@@ -861,12 +847,12 @@ with open(out_loc, "a") as file:
 
     # Numeric
     make_combinations(
-        file, numbers.values(), larger_values + less_values + [in_range, between],
+        file,
+        numbers.values(),
+        larger_values + less_values + [in_range, between],
     )
     make_combinations(file, [positive, negative], numbers.values())
-    for validator in (
-        larger_values + less_values + [in_range, between, positive, negative]
-    ):
+    for validator in larger_values + less_values + [in_range, between, positive, negative]:
         write_validator_name(file, [numbers["number"], validator], name=validator.name)
     for validator in [even, odd]:
         write_validator_name(file, [numbers["integer"], validator], name=validator.name)
@@ -877,23 +863,24 @@ with open(out_loc, "a") as file:
     write_validators(file, abcs.values(), prefix="is_")
     for container in [types["list"], types["tuple"], abcs["Sequence"]]:
         write_validator_name(
-            file, [container, contains_type], name=f"{container.name}_of",
+            file,
+            [container, contains_type],
+            name=f"{container.name}_of",
         )
         for type_ in types.values():
             name = type_.name
             type_name = type_.function
-            replace_name = (
-                type_name.replace("(", "")
-                .replace(")", "")
-                .replace(", ", "` or `")
-                .replace(",", "")
-            )
+            replace_name = type_name.replace("(", "").replace(")", "").replace(", ", "` or `").replace(",", "")
 
             validator = contains_type.fill_parameter_in_function(
-                "type_", type_name, replace_name,
+                "type_",
+                type_name,
+                replace_name,
             )
             write_validator_name(
-                file, [container, validator], name=f"{container.name}_of_{name}",
+                file,
+                [container, validator],
+                name=f"{container.name}_of_{name}",
             )
 
     # Has
@@ -915,10 +902,14 @@ with open(out_loc, "a") as file:
     # Sequence length
     for validator in [abcs["Sequence"], types["list"], types["tuple"], numpy_array]:
         write_validator_name(
-            file, [validator, length], name=f"{validator.name}_of_length",
+            file,
+            [validator, length],
+            name=f"{validator.name}_of_length",
         )
         write_validator_name(
-            file, [validator, lengths], name=f"{validator.name}_between_lengths",
+            file,
+            [validator, lengths],
+            name=f"{validator.name}_between_lengths",
         )
 
     # Paths

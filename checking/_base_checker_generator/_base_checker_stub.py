@@ -77,16 +77,12 @@ class BaseChecker:
 
     def _update(self):
         if (self._number_line is not NoValue) and (not self._number_line):
-                msg = "Number line is empty"
-                raise ValueError(msg)
+            msg = "Number line is empty"
+            raise ValueError(msg)
         if self._literals is not NoValue:
             # To keep the order of the literals, we need to do it this way instead of using a set
             self._literals = tuple(
-
-                    self._literals[i]
-                    for i in range(len(self._literals))
-                    if self._literals[i] not in self._literals[:i]
-
+                self._literals[i] for i in range(len(self._literals)) if self._literals[i] not in self._literals[:i]
             )
             if not self._literals:
                 msg = "Literals are empty"
@@ -99,11 +95,7 @@ class BaseChecker:
 
             if self._literals is not NoValue:
                 old_len = len(self._literals)
-                self._literals = tuple(
-                        literal
-                        for literal in self._literals
-                        if isinstance(literal, self._types)
-                )
+                self._literals = tuple(literal for literal in self._literals if isinstance(literal, self._types))
                 if not self._literals:
                     msg = "No literals are of the required type"
                     raise ValueError(msg)
@@ -113,21 +105,17 @@ class BaseChecker:
                     )
 
                 old_len = len(self._types)
-                self._types = tuple(
-                        t
-                        for t in self._types
-                        if any(isinstance(literal, t) for literal in self._literals)
-                )
+                self._types = tuple(t for t in self._types if any(isinstance(literal, t) for literal in self._literals))
                 if old_len != len(self._types):
                     warnings.warn(
                         "Some types are not present in `literals`, they are removed from `types`",
                     )
 
             if (self._number_line is not NoValue) and (int not in self._types) and (float not in self._types):
-                    self._number_line = NoValue
-                    warnings.warn(
-                        "number_line` is not used because `types` does not contain `int` or `float`",
-                    )
+                self._number_line = NoValue
+                warnings.warn(
+                    "number_line` is not used because `types` does not contain `int` or `float`",
+                )
 
     def __add__(self, other: Self) -> Self:
         if not isinstance(other, self.__class__):

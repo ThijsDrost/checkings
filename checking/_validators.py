@@ -7,11 +7,7 @@ from ._no_val import NoValue
 class _DirectCallMeta(type):
     def __new__(cls, name, bases, dct):
         new_class = super().__new__(cls, name, bases, dct)
-        _attributes = [
-            a
-            for a in dir(new_class)
-            if not a.startswith("_") and callable(getattr(new_class, a))
-        ]
+        _attributes = [a for a in dir(new_class) if not a.startswith("_") and callable(getattr(new_class, a))]
         for a in _attributes:
             docs = inspect.cleandoc(getattr(new_class, a).__doc__)
             setattr(new_class, a, _DirectCallMeta._combine_call(getattr(new_class, a)))
@@ -27,11 +23,7 @@ class _DirectCallMeta(type):
                 for index, line in enumerate(split_docs):
                     if line.startswith(name):
                         parameters_start = True
-                    if (
-                        parameters_start
-                        and split_docs[index - 1] != name
-                        and line.startswith("---")
-                    ):
+                    if parameters_start and split_docs[index - 1] != name and line.startswith("---"):
                         index -= 1
                         break
                 else:
@@ -145,9 +137,10 @@ class _DirectCallMeta(type):
             if call_together:
                 if len(args) < num + min_args + len(argkwargs):
                     num_missing = num + min_args + len(argkwargs) - len(args)
-                    msg = \
-                        (f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''}"
-                         f" (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call).")
+                    msg = (
+                        f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''}"
+                        f" (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call)."
+                    )
                     raise TypeError(msg)
 
                 return func(*args[:-num], **kwargs)(*args[-num:], **call_kwargs)

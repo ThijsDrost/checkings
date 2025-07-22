@@ -128,9 +128,7 @@ class Range:
                 (self.lower.value > other.upper.value)
                 or (self.upper.value < other.lower.value)
                 or (
-                    self.lower.value == other.upper.value
-                    and (not self.lower.inclusive)
-                    and (not other.upper.inclusive)
+                    self.lower.value == other.upper.value and (not self.lower.inclusive) and (not other.upper.inclusive)
                 )
             ):
                 return self, other
@@ -141,7 +139,8 @@ class Range:
                 lower_bound = other.lower
             else:
                 lower_bound = Bound(
-                    self.lower.value, self.lower.inclusive or other.lower.inclusive,
+                    self.lower.value,
+                    self.lower.inclusive or other.lower.inclusive,
                 )
 
             if self.upper.value > other.upper.value:
@@ -150,14 +149,16 @@ class Range:
                 upper_bound = other.upper
             else:
                 upper_bound = Bound(
-                    self.upper.value, self.upper.inclusive or other.upper.inclusive,
+                    self.upper.value,
+                    self.upper.inclusive or other.upper.inclusive,
                 )
 
             return (Range(lower_bound, upper_bound),)
         return NotImplemented
 
     def __sub__(
-        self, other: Range,
+        self,
+        other: Range,
     ) -> tuple[Range] | tuple[Range, Range] | tuple[EmptyRange]:
         if isinstance(other, Range):
             lower_bound = Bound(other.lower.value, not other.lower.inclusive)
@@ -353,7 +354,8 @@ class NumberLine:
         return None
 
     def __add__(
-        self, other: NumberLine | Range | float,
+        self,
+        other: NumberLine | Range | float,
     ) -> NumberLine | NotImplemented:
         if isinstance(other, NumberLine):
             return NumberLine(self.ranges + other.ranges)
@@ -366,7 +368,8 @@ class NumberLine:
         return NotImplemented
 
     def __sub__(
-        self, other: NumberLine | Range | float,
+        self,
+        other: NumberLine | Range | float,
     ) -> NumberLine | NotImplemented:
         def subtract_range(_ranges, range_):
             new_ranges = []
@@ -388,7 +391,8 @@ class NumberLine:
         if isinstance(other, (int, float)):
             return NumberLine(
                 subtract_range(
-                    self.ranges, Range(Bound(other, True), Bound(other, True)),
+                    self.ranges,
+                    Range(Bound(other, True), Bound(other, True)),
                 ),
                 simplify=False,
             )
@@ -414,7 +418,10 @@ class NumberLine:
 
     @staticmethod
     def include_from_floats(
-        start=float("-inf"), end=float("inf"), start_inclusive=True, end_inclusive=True,
+        start=float("-inf"),
+        end=float("inf"),
+        start_inclusive=True,
+        end_inclusive=True,
     ):
         """
         Create a number line including all values between the `start` and `end` value.
@@ -435,7 +442,8 @@ class NumberLine:
         NumberLine
         """
         return NumberLine.include(
-            Bound(start, start_inclusive), Bound(end, end_inclusive),
+            Bound(start, start_inclusive),
+            Bound(end, end_inclusive),
         )
 
     between_from_floats = include_from_floats
@@ -487,7 +495,10 @@ class NumberLine:
 
     @staticmethod
     def include_float(
-        start: float, end: float, start_inclusive=True, end_inclusive=True,
+        start: float,
+        end: float,
+        start_inclusive=True,
+        end_inclusive=True,
     ):
         """
         Create a number line including all values between the `start` and `end` value.
@@ -508,7 +519,8 @@ class NumberLine:
         NumberLine
         """
         return NumberLine.include(
-            Bound(start, start_inclusive), Bound(end, end_inclusive),
+            Bound(start, start_inclusive),
+            Bound(end, end_inclusive),
         )
 
     between_float = include_float
@@ -600,7 +612,10 @@ class NumberLine:
 
     @staticmethod
     def exclude_from_floats(
-        start=float("-inf"), end=float("inf"), start_inclusive=True, end_inclusive=True,
+        start=float("-inf"),
+        end=float("inf"),
+        start_inclusive=True,
+        end_inclusive=True,
     ):
         """
         Create a number line excluding all values between the `start` and `end` value.
@@ -617,7 +632,8 @@ class NumberLine:
         NumberLine
         """
         return NumberLine.exclude(
-            Bound(start, start_inclusive), Bound(end, end_inclusive),
+            Bound(start, start_inclusive),
+            Bound(end, end_inclusive),
         )
 
     outside_from_floats = exclude_from_floats
