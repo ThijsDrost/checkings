@@ -407,14 +407,14 @@ path_val = Validator('path', 'validators', 'check_path', docstring_description='
                      add_func='def check_path():\n\t'
                               'def checker(value):\n\t\t'
                               'if not os.path.exists(value):\n\t\t\t'
-                              'return ValueError(f"Path does not exist")\n\t\t'
+                              'return ValueError(f"Path `{value}` does not exist")\n\t\t'
                               'return None\n\t'
                               'return checker')
 dir_val = Validator('dir', 'validators', 'check_dir', docstring_description='is a valid directory',
                     add_func='def check_dir():\n\t'
                              'def checker(value):\n\t\t'
                              'if not os.path.isdir(value):\n\t\t\t'
-                             'return ValueError(f"Path is not a directory")\n\t\t'
+                             'return ValueError(f"Path `{value}` is not a directory")\n\t\t'
                              'return None\n\t'
                              'return checker')
 file_val = Validator('file', 'validators', 'check_file', docstring_description='is a valid file',
