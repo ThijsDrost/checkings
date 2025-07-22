@@ -5,7 +5,13 @@ import warnings
 import collections  # noqa: F401
 import os  # noqa: F401
 
-import numpy as np  # noqa: F401
+try:
+    import numpy as np  # noqa: F401
+    HAS_NUMPY = True
+except ImportError:
+    np = None
+    HAS_NUMPY = False
+
 
 from ._no_val import NoValue
 from .number_line import NumberLine
@@ -1939,12 +1945,18 @@ def check_lens(min_length, max_length):
 
 def check_sorted():
     def checker(value):
-        if isinstance(value, np.ndarray):
-            if not np.all(value[:-1] <= value[1:]):
-                return ValueError(f"Value must be sorted")
+        def value_error(wrong):
+            return ValueError(f"Value must be sorted, goes wrong at index{"es" if len(wrong) > 1 else ""} {wrong}")
+        if HAS_NUMPY:  
+            if isinstance(value, np.ndarray):  
+                values = value[:-1] <= value[1:]
+                if not np.all(values):  
+                    wrong = np.argwhere(~values)[:, 0]  
+                    return value_error(wrong)
         else:
             if all(value[i] <= value[i+1] for i in range(len(value) - 1)):
-                return ValueError(f"Value must be sorted")
+                wrong = [i for i in range(len(value) - 1) if value[i] > value[i + 1]]
+                return value_error(wrong)
         return None
     return checker
 
@@ -2029,21 +2041,21 @@ def check_numpy_subdtype(subdtype):
 def check_path():
     def checker(value):
         if not os.path.exists(value):
-            return ValueError(f"Path does not exist")
+            return ValueError(f"Path `{value}` does not exist")
         return None
     return checker
 
 def check_dir():
     def checker(value):
         if not os.path.isdir(value):
-            return ValueError(f"Path is not a directory")
+            return ValueError(f"Path `{value}` is not a directory")
         return None
     return checker
 
 def check_file():
     def checker(value):
         if not os.path.isfile(value):
-            return ValueError(f"Path is not a file")
+            return ValueError(f"Path `{value}` is not a file")
         return None
     return checker
 
