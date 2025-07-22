@@ -507,7 +507,10 @@ def write_funcs(file_handle):
     file_handle.write("\n")
     for func in VALIDATOR_FUNCS.values():
         if isinstance(func, str):
-            file_handle.write(remove_indentation(func.replace('\t', '    ')))
+            # Remove '# noqa: F821' from functions.
+            # noqa: F821 is needed in the generator, since the validator functions may use variables from the stub file,
+            # but the checks are wanted in the generated file
+            file_handle.write(remove_indentation(func.replace('\t', '    ').replace("# noqa: F821", "")))
             file_handle.write("\n\n")
 
 path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
