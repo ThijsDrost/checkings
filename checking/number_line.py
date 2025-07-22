@@ -18,8 +18,8 @@ class Bound:
 
         Notes
         -----
-        When the bound is infinity or minus infinity, the bound is always stored as inclusive to make the comparison easier. And
-        thus infinity is equal to infinity and minus infinity is equal to minus infinity.
+        When the bound is infinity or minus infinity, the bound is always stored as inclusive to make the comparison
+        easier. And thus infinity is equal to infinity and minus infinity is equal to minus infinity.
         """
         if value == float("inf") or value == float("-inf"):
             inclusive = True
@@ -105,8 +105,8 @@ class Range:
 
         Notes
         -----
-        The Bound class always represents a bound of (minus) infinity as inclusive, when printing these bounds are shown as
-        (mathematically) correct exclusive bounds.
+        The Bound class always represents a bound of (minus) infinity as inclusive, when printing these bounds are
+        shown as (mathematically) correct exclusive bounds.
         """
         self.lower = lower
         self.upper = upper

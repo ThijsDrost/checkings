@@ -54,7 +54,8 @@ class _DirectCallMeta(type):
             value: Optional[Any]
                 The value to be validated, used for the direct call to the validator
             name: Optional[str]
-                The name of the parameter to be validated, used for the direct call to the validator. This is used to provide a more informative error message.
+                The name of the parameter to be validated, used for the direct call to the validator. This is used to 
+                provide a more informative error message.
             """
 
             notes = """
@@ -149,7 +150,8 @@ class _DirectCallMeta(type):
                 if len(args) < num + min_args + len(argkwargs):
                     num_missing = num + min_args + len(argkwargs) - len(args)
                     raise TypeError(
-                        f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''} (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call)."
+                        f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''}"
+                        f" (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call)."
                     )
 
                 return func(*args[:-num], **kwargs)(*args[-num:], **call_kwargs)

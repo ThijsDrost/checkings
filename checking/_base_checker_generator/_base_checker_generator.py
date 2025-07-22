@@ -56,10 +56,6 @@ class Validator:
         if isinstance(self.add_func, Callable):
             self.add_func = "\n".join(inspect.getsourcelines(self.add_func)[0])
 
-    # def copy(self):
-    #     parameters = [param.copy() for param in self.parameters]
-    #     return Validator(self.name, self.param_name, self.function, self.docstring_description, parameters, self.add_func)
-
     def get_docstring_description(self):
         description = self.docstring_description
         if self.parameters is not None:
@@ -196,7 +192,8 @@ def make_checker(validators: Sequence[Validator], prefix=""):
     elif len(description_validators) == 1:
         description += description_validators[0].get_docstring_description()
     elif len(description_validators) == 2:
-        description += f"{description_validators[0].get_docstring_description()} and {description_validators[1].get_docstring_description()}"
+        description += (f"{description_validators[0].get_docstring_description()} "
+                        f"and {description_validators[1].get_docstring_description()}")
     else:
         description += ", and ".join(
             [
@@ -333,7 +330,8 @@ def check_inside_type(type_):
                 )
             else:
                 return ValueError(
-                    f"Value must contain only values of type {type_}. Errors: {', '.join(errors[:-1])}, and {errors[-1]}"
+                    f"Value must contain only values of type {type_}. Errors:"
+                    f" {', '.join(errors[:-1])}, and {errors[-1]}"
                 )
         return None
 
@@ -382,7 +380,8 @@ abcs = {
         capital_to_underscore(name),
         "types",
         f"(collections.abc.{name},)",
-        docstring_description=f"is an instance of {a_or_an(name)} {name} (:external+python:py:class:`collections.abc.{name}`)",
+        docstring_description =
+            f"is an instance of {a_or_an(name)} {name} (:external+python:py:class:`collections.abc.{name}`)",
     )
     for name in abc_names
 }

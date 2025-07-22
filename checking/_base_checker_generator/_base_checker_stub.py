@@ -14,9 +14,9 @@ except ImportError:
     HAS_NUMPY = False
 
 
-from ._no_val import NoValue
-from .number_line import NumberLine
-from ._validator_error import ValidatorError
+from ._no_val import NoValue  # noqa
+from .number_line import NumberLine  # noqa
+from ._validator_error import ValidatorError  # noqa
 
 
 class BaseChecker:
@@ -34,8 +34,8 @@ class BaseChecker:
         Parameters
         ----------
         default: any
-            The default value of the attribute. If default is callable, this is used a default factory, the factory should have no
-            arguments. If default is mutable, it must have a `copy` method. Mutability is checked by
+            The default value of the attribute. If default is callable, this is used a default factory, the factory
+            should have no arguments. If default is mutable, it must have a `copy` method. Mutability is checked by
             checking if the object has a `__setitem__` or `set` method.
         number_line: NumberLine
             The number line that the attribute must be on
@@ -162,66 +162,6 @@ class BaseChecker:
             replace_none=replace_none,
         )
 
-    # def __sub__(self, other: Self) -> Self:
-    #     if not isinstance(other, self.__class__):
-    #         raise TypeError(f'Cannot subtract {type(other)} from {self.__class__}')
-    #
-    #     def subtract_values(a, b, name):
-    #         if a == b:
-    #             result = NoValue
-    #         elif b is not NoValue:
-    #             if a is not NoValue:
-    #                 raise ValueError(f'To remove {name}, both descriptors must have the same {name},'
-    #                                  f'not {a} and {b}')
-    #             else:
-    #                 raise ValueError(f'Cannot remove {name} from a descriptor that does not have a {name}')
-    #         else:
-    #             result = a
-    #         return result
-    #
-    #     def subtract_numberlines(a, b):
-    #         if a is NoValue:
-    #             if b is NoValue:
-    #                 return NoValue
-    #             else:
-    #                 warnings.warn(f'Trying to remove number line from a descriptor that does not have a number line, assuming'
-    #                               f'that the number line is {NumberLine.full()}')
-    #                 a = NumberLine.full()
-    #         if b is NoValue:
-    #             return a
-    #         return a - b
-    #
-    #     def subtract_tuples(a, b, name):
-    #         if a is not NoValue:
-    #             if b is not NoValue:
-    #                 result = tuple((val for val in a if val not in b))
-    #             else:
-    #                 result = a
-    #         elif b is not NoValue:
-    #             raise ValueError(f'Cannot remove {name} from a descriptor that does not have a {name}')
-    #         else:
-    #             result = NoValue
-    #         return result
-    #
-    #     default = subtract_values(self._default, other._default, 'default value')
-    #     validators = subtract_values(self._validators, other._validators, 'validators')
-    #
-    #     number_line = subtract_numberlines(self._number_line, other._number_line)
-    #
-    #     converter = subtract_tuples(self._converter, other._converter, 'converter')
-    #     literals = subtract_tuples(self._literals, other._literals, 'literals')
-    #     types = subtract_tuples(self._types, other._types, 'types')
-    #
-    #     replace_none = self._replace_none and not other._replace_none
-    #
-    #     for vals, name in ((number_line, 'number lines'), (literals, 'literals'), (types, 'types')):
-    #         if vals is not NoValue:
-    #             if not vals:
-    #                 raise ValueError(f'{name} is empty, cannot remove all values')
-    #
-    #     return self.__class__(default=default, number_line=number_line, literals=literals, types=types, converter=converter,
-    #                           validators=validators, replace_none=replace_none)
-
     def _check_type(self, value):
         if self._types is not NoValue:
             for t in self._types:
@@ -229,7 +169,8 @@ class BaseChecker:
                     break
             else:
                 return ValueError(
-                    f"Value ({type(value)}) must be one of the following types: {self._tuple_str([t.__name__ for t in self._types])}"
+                    f"Value ({type(value)}) must be one of the following types:"
+                    f" {self._tuple_str([t.__name__ for t in self._types])}"
                 )
         return None
 

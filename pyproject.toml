@@ -20,3 +20,11 @@ addopts = [
 testpaths = [
     "tests"
 ]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+exclude = ["_base_checker.py"]
+
+[tool.ruff.lint]
+select = ["E", "F"]
