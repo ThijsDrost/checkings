@@ -454,17 +454,29 @@ contains = Validator('contains', 'validators', 'check_contains', docstring_descr
                               'return checker')
 literals = Validator('literals', 'literals', 'literals', docstring_description='is one of `{0}`',
                      parameters=[Parameter('literals', 'literals', 'collections.abc.Sequence', 'The literals to check against')])
+
+
+def check_sorted():
+    def checker(value):
+        def value_error(wrong):
+            return ValueError(f"Value must be sorted, goes wrong at index{"es" if len(wrong) > 1 else ""} {wrong}")
+
+        if HAS_NUMPY:  # noqa: F821
+            if isinstance(value, np.ndarray):  # noqa: F821
+                values = value[:-1] <= value[1:]
+                if not np.all(values):  # noqa: F821
+                    wrong = np.argwhere(~values)[:, 0]  # noqa: F821
+                    return value_error(wrong)
+        else:
+            if all(value[i] <= value[i+1] for i in range(len(value) - 1)):
+                wrong = [i for i in range(len(value) - 1) if value[i] > value[i + 1]]
+                return value_error(wrong)
+        return None
+    return checker
+
+
 sorted_val = Validator('sorted', 'validators', 'check_sorted', docstring_description='is sorted',
-                       add_func='def check_sorted():\n\t'
-                                'def checker(value):\n\t\t'
-                                'if isinstance(value, np.ndarray):\n\t\t\t'
-                                'if not np.all(value[:-1] <= value[1:]):\n\t\t\t\t'
-                                'return ValueError(f"Value must be sorted")\n\t\t'
-                                'else:\n\t\t\t'
-                                'if all(value[i] <= value[i+1] for i in range(len(value) - 1)):\n\t\t\t\t'
-                                'return ValueError(f"Value must be sorted")\n\t\t'
-                                'return None\n\t'
-                                'return checker')
+                       add_func=check_sorted)
 default = Validator('default', 'default', 'default', parameters=[Parameter('default', 'default', 'any', 'The default value')])
 
 
