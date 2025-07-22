@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import itertools
 import os
+import pathlib
 import shutil
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import KW_ONLY, dataclass
@@ -849,7 +850,7 @@ def write_funcs(file_handle):
             file_handle.write("\n\n")
 
 
-path = os.path.realpath(__file__).parent
+path = pathlib.Path(os.path.realpath(__file__)).parent
 stub_loc = os.path.join(path, "_base_checker_stub.py")
 out_loc = os.path.join(path.parent, "_base_checker.py")
 stub_str = shutil.copy(stub_loc, out_loc)
