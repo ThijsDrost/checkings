@@ -73,6 +73,18 @@ class _DirectCallMeta(type):
 
     @staticmethod
     def _combine_call(func):
+        """
+        Combines the parameters of the function with the call to the validator, so that it can be called directly
+
+        Parameters
+        ----------
+        func: callable
+            The validator function
+
+        Returns
+        -------
+            callable | None
+        """
         parameters = [p for p in inspect.signature(func).parameters.values()]
 
         min_args = 0
