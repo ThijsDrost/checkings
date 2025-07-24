@@ -19,6 +19,10 @@ def test():
     range11 = Range(Bound(4, True), Bound(4, True))
     range12 = Range(Bound(0, True), Bound(10, False))
 
+    assert(0 in range12, True)
+    assert(5 in range12, True)
+    assert(10 in range12, False)
+
     def assertion(got, expectation):
         if not isinstance(expectation, tuple):
             expectation = (expectation,)
@@ -30,17 +34,11 @@ def test():
     assertion(range1 - range4, Range(Bound(0, True), Bound(10, False)))
     assertion(range1 - range3, Range(Bound(0, True), Bound(5, True)))
     assertion(range1 - range5, Range(Bound(5, False), Bound(10, True)))
-    assertion(
-        range1 - range6,
-        (
-            Range(Bound(0, True), Bound(0, True)),
-            Range(Bound(10, True), Bound(10, True)),
-        ),
-    )
     assertion(range1 - range7, EmptyRange)
     assertion(range1 - range8, Range(Bound(0, False), Bound(10, True)))
     assertion(range1 - range9, Range(Bound(0, True), Bound(10, False)))
     assertion(range1 - range10, Range(Bound(0, True), Bound(0, True)))
+    assertion(range1 - range12, Range(Bound(10, True), Bound(10, True)))
     assertion(
         range1 - range11,
         (
@@ -48,7 +46,13 @@ def test():
             Range(Bound(4, False), Bound(10, True)),
         ),
     )
-    assertion(range1 - range12, Range(Bound(10, True), Bound(10, True)))
+    assertion(
+        range1 - range6,
+        (
+            Range(Bound(0, True), Bound(0, True)),
+            Range(Bound(10, True), Bound(10, True)),
+        ),
+    )
 
     range1 = Range(Bound(0, False), Bound(10, False))
     range2 = Range(Bound(0, True), Bound(10, True))
