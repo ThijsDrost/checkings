@@ -5,6 +5,10 @@ from ._no_val import NoValue
 
 
 class _DirectCallMeta(type):
+    """
+    Metaclass that allows the Validator generator functions to be called directly with two extra parameters to directly
+    do the validation without having to create a Validator instance.
+    """
     def __new__(cls, name, bases, dct):
         new_class = super().__new__(cls, name, bases, dct)
         _attributes = [a for a in dir(new_class) if not a.startswith("_") and callable(getattr(new_class, a))]
