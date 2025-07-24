@@ -24,6 +24,7 @@ class BaseChecker:
     def __init__(
         self,
         default=NoValue,
+        default_factory=NoValue,
         number_line=NoValue,
         literals=NoValue,
         types=NoValue,
@@ -35,9 +36,10 @@ class BaseChecker:
         Parameters
         ----------
         default: any
-            The default value of the attribute. If default is callable, this is used a default factory, the factory
-            should have no arguments. If default is mutable, it must have a `copy` method. Mutability is checked by
-            checking if the object has a `__setitem__` or `set` method.
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], any]
+            A function that returns the default value of the attribute.
         number_line: NumberLine
             The number line that the attribute must be on
         literals: tuple[any, ...] | any
@@ -48,6 +50,19 @@ class BaseChecker:
             A function that converts the attribute to the correct type
         validators: tuple[Callable[[any], Exception | None], ...] | Callable[[any], Exception | None]
             A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+
+        Raises
+        ------
+        TypeError
+            If `default_factory` is not a callable, or if `literals`, `types`, or `converter` are not of the correct
+            type.
+        ValueError
+            If both `default` and `default_factory` are provided, or if `literals`, `types`, or `validators` are not
+            tuples or the correct type, or if `number_line` is empty.
         """
 
         def check_tuple(value, type_, name) -> tuple:
@@ -60,14 +75,25 @@ class BaseChecker:
 
         def check_type[T](value: T, type_, name) -> T:
             if (not isinstance(value, type_)) and (value is not NoValue):
-                msg = f"`{name}` must be a {type_.__name__}"
+                msg = f"`{name}` must be a {type_.__name__}, not {type(value).__name__}"
                 raise TypeError(msg)
             return value
 
         if not isinstance(literals, tuple | type(NoValue)):
             literals = (literals,)
 
+        if not hasattr(default, "__hash__"):
+            try:
+                default.copy()
+            except AttributeError as e:
+                msg = "If default is mutable (ie. doesn't have an hash), it must have a `copy` method"
+                raise ValueError(msg) from e
+
         self._default = default
+        self._default_factory = check_type(default_factory, Callable, "default_factory")
+        if (default is not NoValue) and (default_factory is not NoValue):
+            msg = "Cannot use both `default` and `default_factory`"
+            raise ValueError(msg)
         self._number_line = check_type(number_line, NumberLine, "number_line")
         self._literals = check_type(literals, tuple, "literals")
         self._types = check_tuple(types, type, "types")
@@ -133,6 +159,7 @@ class BaseChecker:
 
         default = add_values(self._default, other._default, "default values")
         converter = add_values(self._converter, other._converter, "converters")
+        default_factory = add_values( self._default_factory, other._default_factory, "default factories")
 
         # Tuples can be added together directly
         validators = self._validators + other._validators
@@ -143,6 +170,7 @@ class BaseChecker:
 
         return self.__class__(
             default=default,
+            default_factory=default_factory,
             number_line=number_line,
             literals=literals,
             types=types,
@@ -225,14 +253,10 @@ class BaseChecker:
         )
 
     def _get_default(self):
-        if callable(self._default):
-            return self._default()
-        if hasattr(self._default, "__setitem__") or hasattr(self._default, "set"):
-            try:
-                return self._default.copy()
-            except AttributeError as e:
-                msg = "If default is mutable, it must have a `copy` method"
-                raise ValueError(msg) from e
+        if self._default is NoValue:
+            return self._default_factory() if self._default_factory is not NoValue else NoValue
+        if not hasattr(self._default, "__hash__"):
+            return self._default.copy()
         else:
             return self._default
 
