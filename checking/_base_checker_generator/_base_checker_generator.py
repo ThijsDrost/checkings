@@ -169,7 +169,7 @@ def make_checker(validators: Sequence[Validator], prefix=""):
         parameter_string = ", " + parameter_string
 
     description_validators = [validator for validator in validators if validator.param_name != "default"]
-    description = "Check if the value "
+    description = "Generate checker to check if the value "
     if len(description_validators) == 0:
         description = ""
     elif len(description_validators) == 1:
@@ -233,6 +233,11 @@ def make_checker(validators: Sequence[Validator], prefix=""):
     def {prefix}{func_name}(cls{parameter_string}, **kwargs) -> Self:
         \"\"\"
         {description}.{parameters_header}{parameter_description}
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         \"\"\"{add_func}
         return {call_string}
     """.replace("\t", "    ")
