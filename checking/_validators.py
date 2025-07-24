@@ -64,15 +64,6 @@ class _DirectCallMeta(type):
         return new_class
 
     @staticmethod
-    def _call_inside(func):
-        def call(*args, **kwargs):
-            if args or kwargs:
-                return func()(*args, **kwargs)
-            return func()
-
-        return call
-
-    @staticmethod
     def _combine_call(func):
         """
         Combines the parameters of the function with the call to the validator, so that it can be called directly
