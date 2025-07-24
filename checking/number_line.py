@@ -2,36 +2,40 @@ from __future__ import annotations
 
 from typing import assert_never
 
-import attrs
 
-
-@attrs.frozen()
 class Bound:
-    value: float | int
-    """The value of the bound"""
-    inclusive: bool = attrs.field(order=False)
-    """Whether the bound is inclusive or not"""
+    value: float
+    inclusive: bool
 
     def __init__(self, value, inclusive):
         """
         Represent a bound.
 
+        Attributes
+        ----------
+        value: float | int
+            The value of the bound.
+        inclusive: bool
+            Whether the bound is inclusive. If True, the bound is inclusive, if False, the bound is exclusive.
+            When the bound is infinity or minus infinity, the bound is always stored as inclusive.
+
         Notes
         -----
         When the bound is infinity or minus infinity, the bound is always stored as inclusive to make the comparison
         easier. And thus infinity is equal to infinity and minus infinity is equal to minus infinity.
+
+        When comparing bounds, there are four possible outcomes:
+        - A bound is smaller than another bound, e.g. Bound(1, True) < Bound(2, True)
+        - A bound is equal to another bound, e.g. Bound(1, True) == Bound(1, True)
+        - A bound is bigger than another bound, e.g. Bound(2, True) > Bound(1, True)
+        - A bound is neither bigger, smaller, nor equal to another bound, e.g. Bound(1, True) < Bound(1, False)
+
+        When comparing a bound with a float, the float is considered an inclusive bound.
         """
         if value == float("inf") or value == float("-inf"):
             inclusive = True
-        self.__attrs_init__(value, inclusive)
-
-    def _smaller_or_eq(self, other) -> bool | NotImplemented:
-        """Check if the bound value is smaller than the other value (takes into account inclusivity)"""
-
-        def less(first, second):
-            return first < second
-
-        return self._compare(other, less)
+        self.value = value
+        self.inclusive = inclusive
 
     def smaller_or_eq(self, other) -> bool:
         """
@@ -42,19 +46,7 @@ class Bound:
         TypeError
             If the comparison is not possible.
         """
-        comparison = self._smaller_or_eq(other)
-        if comparison is NotImplemented:
-            msg = f"Cannot compare {self} with {other}"
-            raise TypeError(msg)
-        return comparison
-
-    def _bigger_or_eq(self, other) -> bool | NotImplemented:
-        """Check if the bound value is bigger than the other value (takes into account inclusivity)"""
-
-        def more(first, second):
-            return first > second
-
-        return self._compare(other, more)
+        return self <= other
 
     def bigger_or_eq(self, other) -> bool:
         """
@@ -65,24 +57,7 @@ class Bound:
         TypeError
             If the comparison is not possible.
         """
-        result = self._bigger_or_eq(other)
-        if result is NotImplemented:
-            msg = f"Cannot compare {self} with {other}"
-            raise TypeError(msg)
-        return result
-
-    def _compare(self, other, operator) -> bool | NotImplemented:
-        if not isinstance(other, (Bound, int, float)):
-            return NotImplemented
-        if isinstance(other, Bound):
-            result = operator(self.value, other.value)
-            if self.inclusive and other.inclusive:
-                return result or (self.value == other.value)
-            return result
-        result = operator(self.value, other)
-        if self.inclusive:
-            return result or (self.value == other)
-        return result
+        return self >= other
 
     @staticmethod
     def infinity() -> Bound:
@@ -91,6 +66,65 @@ class Bound:
     @staticmethod
     def minus_infinity() -> Bound:
         return Bound(float("-inf"), True)
+
+    def not_comparable(self, other: Bound) -> bool:
+        """
+        Check if the bound is neither smaller, bigger, nor equal to the other bound.
+        This is the case when the bounds have the same value, but different inclusivity.
+
+        Raises
+        ------
+        TypeError
+            If the comparison is not possible.
+        """
+        if isinstance(other, Bound):
+            return self.value == other.value and self.inclusive != other.inclusive
+        msg = f"Cannot compare Bound with non Bound {type(other).__name__}"
+        raise TypeError(msg)
+
+    def __eq__(self, other: Bound | float) -> bool:
+        if isinstance(other, Bound):
+            return (self.value == other.value) and (self.inclusive == other.inclusive)
+        if isinstance(other, (int, float)):
+            return self.inclusive and self.value == other
+        return NotImplemented
+
+    def __lt__(self, other: Bound | float) -> bool:
+        if isinstance(other, Bound):
+            return self.value < other.value
+        if isinstance(other, (int, float)):
+            return self.value < other
+        return NotImplemented
+
+    def __gt__(self, other: Bound | float):
+        if isinstance(other, Bound):
+            return self.value > other.value
+        if isinstance(other, (int, float)):
+            return self.value > other
+        return NotImplemented
+
+    def __le__(self, other: Bound | float) -> bool:
+        if isinstance(other, Bound):
+            return self.value < other.value or self == other
+        if isinstance(other, (int, float)):
+            return self.value < other or self == other
+        return NotImplemented
+
+    def __ge__(self, other: Bound | float) -> bool:
+        if isinstance(other, Bound):
+            return self.value > other.value or self == other
+        if isinstance(other, (int, float)):
+            return self.value > other or self == other
+        return NotImplemented
+
+    def __repr__(self):
+        return f"Bound({self.value}, {self.inclusive})"
+
+    def __hash__(self):
+        """
+        Return a hash of the bound. The hash is based on the value and inclusivity of the bound.
+        """
+        return hash((self.value, self.inclusive))
 
 
 MinusInfinity = Bound.minus_infinity()
@@ -114,13 +148,13 @@ class Range:
             raise ValueError(msg)
 
     def __contains__(self, item: float):
-        smaller = self.lower._smaller_or_eq(item)
+        smaller = self.lower <= item
         if smaller is NotImplemented:
             return NotImplemented
-        return smaller and self.upper._bigger_or_eq(item)
+        return smaller and self.upper >= item
 
     def __bool__(self):
-        return self.lower._smaller_or_eq(self.upper)
+        return self.lower <= self.upper
 
     def __add__(self, other: Range) -> tuple[Range] | tuple[Range, Range]:
         if isinstance(other, Range):
