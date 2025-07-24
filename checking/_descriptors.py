@@ -12,8 +12,8 @@ class Descriptor(BaseChecker):
         # slightly strange error message, which states that the error was raised while calling __set_name__.
 
         # Set the name to default, so that the error message is more informative if the default value is not valid.
-        if self._default is not NoValue:
-            self._validate(self._default, f"Default value for `{name}`")
+        if (default := self._get_default()) is not NoValue:
+            self._validate(default, f"Default value for `{name}`")
         self._update()
 
         self.owner = owner
