@@ -24,6 +24,7 @@ class BaseChecker:
     def __init__(
         self,
         default=NoValue,
+        default_factory=NoValue,
         number_line=NoValue,
         literals=NoValue,
         types=NoValue,
@@ -35,9 +36,10 @@ class BaseChecker:
         Parameters
         ----------
         default: any
-            The default value of the attribute. If default is callable, this is used a default factory, the factory
-            should have no arguments. If default is mutable, it must have a `copy` method. Mutability is checked by
-            checking if the object has a `__setitem__` or `set` method.
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], any]
+            A function that returns the default value of the attribute.
         number_line: NumberLine
             The number line that the attribute must be on
         literals: tuple[any, ...] | any
@@ -48,6 +50,19 @@ class BaseChecker:
             A function that converts the attribute to the correct type
         validators: tuple[Callable[[any], Exception | None], ...] | Callable[[any], Exception | None]
             A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+
+        Raises
+        ------
+        TypeError
+            If `default_factory` is not a callable, or if `literals`, `types`, or `converter` are not of the correct
+            type.
+        ValueError
+            If both `default` and `default_factory` are provided, or if `literals`, `types`, or `validators` are not
+            tuples or the correct type, or if `number_line` is empty.
         """
 
         def check_tuple(value, type_, name) -> tuple:
@@ -60,14 +75,25 @@ class BaseChecker:
 
         def check_type[T](value: T, type_, name) -> T:
             if (not isinstance(value, type_)) and (value is not NoValue):
-                msg = f"`{name}` must be a {type_.__name__}"
+                msg = f"`{name}` must be a {type_.__name__}, not {type(value).__name__}"
                 raise TypeError(msg)
             return value
 
         if not isinstance(literals, tuple | type(NoValue)):
             literals = (literals,)
 
+        if not hasattr(default, "__hash__"):
+            try:
+                default.copy()
+            except AttributeError as e:
+                msg = "If default is mutable (ie. doesn't have an hash), it must have a `copy` method"
+                raise ValueError(msg) from e
+
         self._default = default
+        self._default_factory = check_type(default_factory, Callable, "default_factory")
+        if (default is not NoValue) and (default_factory is not NoValue):
+            msg = "Cannot use both `default` and `default_factory`"
+            raise ValueError(msg)
         self._number_line = check_type(number_line, NumberLine, "number_line")
         self._literals = check_type(literals, tuple, "literals")
         self._types = check_tuple(types, type, "types")
@@ -133,6 +159,7 @@ class BaseChecker:
 
         default = add_values(self._default, other._default, "default values")
         converter = add_values(self._converter, other._converter, "converters")
+        default_factory = add_values( self._default_factory, other._default_factory, "default factories")
 
         # Tuples can be added together directly
         validators = self._validators + other._validators
@@ -143,6 +170,7 @@ class BaseChecker:
 
         return self.__class__(
             default=default,
+            default_factory=default_factory,
             number_line=number_line,
             literals=literals,
             types=types,
@@ -225,14 +253,10 @@ class BaseChecker:
         )
 
     def _get_default(self):
-        if callable(self._default):
-            return self._default()
-        if hasattr(self._default, "__setitem__") or hasattr(self._default, "set"):
-            try:
-                return self._default.copy()
-            except AttributeError as e:
-                msg = "If default is mutable, it must have a `copy` method"
-                raise ValueError(msg) from e
+        if self._default is NoValue:
+            return self._default_factory() if self._default_factory is not NoValue else NoValue
+        if not hasattr(self._default, "__hash__"):
+            return self._default.copy()
         else:
             return self._default
 
@@ -252,145 +276,205 @@ class BaseChecker:
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs)
      
     @classmethod
     def default_int(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int with default value `default`.
+        Generate checker to check if the value is an instance of an int with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(int,), **kwargs)
      
     @classmethod
     def default_float(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float with default value `default`.
+        Generate checker to check if the value is an instance of a float with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(float,), **kwargs)
      
     @classmethod
     def default_str(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a str with default value `default`.
+        Generate checker to check if the value is an instance of a str with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(str,), **kwargs)
      
     @classmethod
     def default_tuple(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple with default value `default`.
+        Generate checker to check if the value is an instance of a tuple with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(tuple,), **kwargs)
      
     @classmethod
     def default_dict(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a dict with default value `default`.
+        Generate checker to check if the value is an instance of a dict with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(dict,), **kwargs)
      
     @classmethod
     def default_list(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list with default value `default`.
+        Generate checker to check if the value is an instance of a list with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(list,), **kwargs)
      
     @classmethod
     def default_slice(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a slice with default value `default`.
+        Generate checker to check if the value is an instance of a slice with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(slice,), **kwargs)
      
     @classmethod
     def default_integer(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer with default value `default`.
+        Generate checker to check if the value is an instance of an integer with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(int,), **kwargs)
      
     @classmethod
     def default_number(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number with default value `default`.
+        Generate checker to check if the value is an instance of a number with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(int, float), **kwargs)
      
     @classmethod
     def default_string(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a string with default value `default`.
+        Generate checker to check if the value is an instance of a string with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(str,), **kwargs)
      
     @classmethod
     def default_dictionary(cls, default: any, **kwargs) -> Self:
         """
-        Check if the value is an instance of a dictionary with default value `default`.
+        Generate checker to check if the value is an instance of a dictionary with default value `default`.
 
         Parameters
         ----------
         default: any
             The default value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(default=default, **kwargs) + cls(types=(dict,), **kwargs)
      
     @classmethod
     def integer_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is greater than `min_val`.
+        Generate checker to check if the value is an instance of an integer and is greater than `min_val`.
 
         Parameters
         ----------
@@ -398,13 +482,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def integer_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is larger than `min_val`.
+        Generate checker to check if the value is an instance of an integer and is larger than `min_val`.
 
         Parameters
         ----------
@@ -412,13 +501,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def integer_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is bigger than `min_val`.
+        Generate checker to check if the value is an instance of an integer and is bigger than `min_val`.
 
         Parameters
         ----------
@@ -426,13 +520,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def integer_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is smaller than `max_val`.
+        Generate checker to check if the value is an instance of an integer and is smaller than `max_val`.
 
         Parameters
         ----------
@@ -440,13 +539,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def integer_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is less than `max_val`.
+        Generate checker to check if the value is an instance of an integer and is less than `max_val`.
 
         Parameters
         ----------
@@ -454,13 +558,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def integer_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of an integer and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -472,13 +581,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = True
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def integer_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of an integer and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -490,13 +604,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = False
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def number_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is greater than `min_val`.
+        Generate checker to check if the value is an instance of a number and is greater than `min_val`.
 
         Parameters
         ----------
@@ -504,13 +623,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def number_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is larger than `min_val`.
+        Generate checker to check if the value is an instance of a number and is larger than `min_val`.
 
         Parameters
         ----------
@@ -518,13 +642,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def number_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is bigger than `min_val`.
+        Generate checker to check if the value is an instance of a number and is bigger than `min_val`.
 
         Parameters
         ----------
@@ -532,13 +661,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def number_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is smaller than `max_val`.
+        Generate checker to check if the value is an instance of a number and is smaller than `max_val`.
 
         Parameters
         ----------
@@ -546,13 +680,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def number_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is less than `max_val`.
+        Generate checker to check if the value is an instance of a number and is less than `max_val`.
 
         Parameters
         ----------
@@ -560,13 +699,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def number_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -578,13 +722,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = True
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def number_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -596,13 +745,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = False
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def float_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is greater than `min_val`.
+        Generate checker to check if the value is an instance of a float and is greater than `min_val`.
 
         Parameters
         ----------
@@ -610,13 +764,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def float_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is larger than `min_val`.
+        Generate checker to check if the value is an instance of a float and is larger than `min_val`.
 
         Parameters
         ----------
@@ -624,13 +783,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def float_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is bigger than `min_val`.
+        Generate checker to check if the value is an instance of a float and is bigger than `min_val`.
 
         Parameters
         ----------
@@ -638,13 +802,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def float_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is smaller than `max_val`.
+        Generate checker to check if the value is an instance of a float and is smaller than `max_val`.
 
         Parameters
         ----------
@@ -652,13 +821,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def float_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is less than `max_val`.
+        Generate checker to check if the value is an instance of a float and is less than `max_val`.
 
         Parameters
         ----------
@@ -666,13 +840,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def float_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of a float and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -684,13 +863,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = True
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def float_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of a float and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -702,13 +886,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = False
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def int_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is greater than `min_val`.
+        Generate checker to check if the value is an instance of an int and is greater than `min_val`.
 
         Parameters
         ----------
@@ -716,13 +905,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def int_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is larger than `min_val`.
+        Generate checker to check if the value is an instance of an int and is larger than `min_val`.
 
         Parameters
         ----------
@@ -730,13 +924,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def int_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is bigger than `min_val`.
+        Generate checker to check if the value is an instance of an int and is bigger than `min_val`.
 
         Parameters
         ----------
@@ -744,13 +943,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def int_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is smaller than `max_val`.
+        Generate checker to check if the value is an instance of an int and is smaller than `max_val`.
 
         Parameters
         ----------
@@ -758,13 +962,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def int_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is less than `max_val`.
+        Generate checker to check if the value is an instance of an int and is less than `max_val`.
 
         Parameters
         ----------
@@ -772,13 +981,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def int_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of an int and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -790,13 +1004,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = True
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def int_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of an int and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -808,109 +1027,154 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = False
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def positive_integer(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value positive and is an instance of an integer.
+        Generate checker to check if the value positive and is an instance of an integer.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
      
     @classmethod
     def positive_number(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value positive and is an instance of a number.
+        Generate checker to check if the value positive and is an instance of a number.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(int, float), **kwargs)
      
     @classmethod
     def positive_float(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value positive and is an instance of a float.
+        Generate checker to check if the value positive and is an instance of a float.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(float,), **kwargs)
      
     @classmethod
     def positive_int(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value positive and is an instance of an int.
+        Generate checker to check if the value positive and is an instance of an int.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
      
     @classmethod
     def negative_integer(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value negative and is an instance of an integer.
+        Generate checker to check if the value negative and is an instance of an integer.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
      
     @classmethod
     def negative_number(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value negative and is an instance of a number.
+        Generate checker to check if the value negative and is an instance of a number.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(int, float), **kwargs)
      
     @classmethod
     def negative_float(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value negative and is an instance of a float.
+        Generate checker to check if the value negative and is an instance of a float.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(float,), **kwargs)
      
     @classmethod
     def negative_int(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value negative and is an instance of an int.
+        Generate checker to check if the value negative and is an instance of an int.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
      
     @classmethod
     def greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is greater than `min_val`.
+        Generate checker to check if the value is an instance of a number and is greater than `min_val`.
 
         Parameters
         ----------
@@ -918,13 +1182,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is larger than `min_val`.
+        Generate checker to check if the value is an instance of a number and is larger than `min_val`.
 
         Parameters
         ----------
@@ -932,13 +1201,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is bigger than `min_val`.
+        Generate checker to check if the value is an instance of a number and is bigger than `min_val`.
 
         Parameters
         ----------
@@ -946,13 +1220,18 @@ class BaseChecker:
             The minimum value
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is smaller than `max_val`.
+        Generate checker to check if the value is an instance of a number and is smaller than `max_val`.
 
         Parameters
         ----------
@@ -960,13 +1239,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is less than `max_val`.
+        Generate checker to check if the value is an instance of a number and is less than `max_val`.
 
         Parameters
         ----------
@@ -974,13 +1258,18 @@ class BaseChecker:
             The maximum value
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
      
     @classmethod
     def in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -992,13 +1281,18 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = True
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and is between `start_val` and `end_val`.
+        Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
         Parameters
         ----------
@@ -1010,94 +1304,139 @@ class BaseChecker:
             Whether the lower bound is included in the range
         end_inclusive: bool = False
             Whether the upper bound is included in the range
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
      
     @classmethod
     def positive(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and positive.
+        Generate checker to check if the value is an instance of a number and positive.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs)
      
     @classmethod
     def negative(cls, include_zero: bool, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number and negative.
+        Generate checker to check if the value is an instance of a number and negative.
 
         Parameters
         ----------
         include_zero: bool
             Whether the value is allowed to be equal to zero
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs)
      
     @classmethod
     def even(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is even.
+        Generate checker to check if the value is an instance of an integer and is even.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(validators=is_even(), **kwargs)
      
     @classmethod
     def odd(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer and is odd.
+        Generate checker to check if the value is an instance of an integer and is odd.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs) + cls(validators=is_odd(), **kwargs)
      
     @classmethod
     def contains(cls, contains: str, **kwargs) -> Self:
         """
-        Check if the value contains `contains`.
+        Generate checker to check if the value contains `contains`.
 
         Parameters
         ----------
         contains: str
             The value to contain
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_contains(contains=contains), **kwargs)
      
     @classmethod
     def literals(cls, literals: collections.abc.Sequence, **kwargs) -> Self:
         """
-        Check if the value is one of `literals`.
+        Generate checker to check if the value is one of `literals`.
 
         Parameters
         ----------
         literals: collections.abc.Sequence
             The literals to check against
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(literals=literals, **kwargs)
      
     @classmethod
     def non_zero(cls, **kwargs) -> Self:
         """
-        Check if the value is not zero.
+        Generate checker to check if the value is not zero.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(number_line=non_zero(), **kwargs)
      
     @classmethod
     def length(cls, length: int, **kwargs) -> Self:
         """
-        Check if the value of length `length`.
+        Generate checker to check if the value of length `length`.
 
         Parameters
         ----------
         length: int
             The correct length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
     def lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
         """
-        Check if the value of length between `min_length` and `max_length` (both inclusive).
+        Generate checker to check if the value of length between `min_length` and `max_length` (both inclusive).
 
         Parameters
         ----------
@@ -1105,659 +1444,1079 @@ class BaseChecker:
             The minimum length
         max_length: int
             The maximum length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
     def sorted(cls, **kwargs) -> Self:
         """
-        Check if the value is sorted.
+        Generate checker to check if the value is sorted.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_sorted(), **kwargs)
      
     @classmethod
     def is_int(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an int.
+        Generate checker to check if the value is an instance of an int.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs)
      
     @classmethod
     def is_float(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a float.
+        Generate checker to check if the value is an instance of a float.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(float,), **kwargs)
      
     @classmethod
     def is_str(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a str.
+        Generate checker to check if the value is an instance of a str.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(str,), **kwargs)
      
     @classmethod
     def is_tuple(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple.
+        Generate checker to check if the value is an instance of a tuple.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs)
      
     @classmethod
     def is_dict(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a dict.
+        Generate checker to check if the value is an instance of a dict.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(dict,), **kwargs)
      
     @classmethod
     def is_list(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list.
+        Generate checker to check if the value is an instance of a list.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs)
      
     @classmethod
     def is_slice(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a slice.
+        Generate checker to check if the value is an instance of a slice.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(slice,), **kwargs)
      
     @classmethod
     def is_integer(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an integer.
+        Generate checker to check if the value is an instance of an integer.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int,), **kwargs)
      
     @classmethod
     def is_number(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a number.
+        Generate checker to check if the value is an instance of a number.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(int, float), **kwargs)
      
     @classmethod
     def is_string(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a string.
+        Generate checker to check if the value is an instance of a string.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(str,), **kwargs)
      
     @classmethod
     def is_dictionary(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a dictionary.
+        Generate checker to check if the value is an instance of a dictionary.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(dict,), **kwargs)
      
     @classmethod
     def is_container(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Container (:external+python:py:class:`collections.abc.Container`).
+        Generate checker to check if the value is an instance of a Container (:external+python:py:class:`collections.abc.Container`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Container,), **kwargs)
      
     @classmethod
     def is_hashable(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an Hashable (:external+python:py:class:`collections.abc.Hashable`).
+        Generate checker to check if the value is an instance of an Hashable (:external+python:py:class:`collections.abc.Hashable`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Hashable,), **kwargs)
      
     @classmethod
     def is_iterable(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an Iterable (:external+python:py:class:`collections.abc.Iterable`).
+        Generate checker to check if the value is an instance of an Iterable (:external+python:py:class:`collections.abc.Iterable`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Iterable,), **kwargs)
      
     @classmethod
     def is_reversible(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Reversible (:external+python:py:class:`collections.abc.Reversible`).
+        Generate checker to check if the value is an instance of a Reversible (:external+python:py:class:`collections.abc.Reversible`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Reversible,), **kwargs)
      
     @classmethod
     def is_generator(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Generator (:external+python:py:class:`collections.abc.Generator`).
+        Generate checker to check if the value is an instance of a Generator (:external+python:py:class:`collections.abc.Generator`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Generator,), **kwargs)
      
     @classmethod
     def is_sized(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sized (:external+python:py:class:`collections.abc.Sized`).
+        Generate checker to check if the value is an instance of a Sized (:external+python:py:class:`collections.abc.Sized`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sized,), **kwargs)
      
     @classmethod
     def is_callable(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Callable (:external+python:py:class:`collections.abc.Callable`).
+        Generate checker to check if the value is an instance of a Callable (:external+python:py:class:`collections.abc.Callable`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Callable,), **kwargs)
      
     @classmethod
     def is_collection(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Collection (:external+python:py:class:`collections.abc.Collection`).
+        Generate checker to check if the value is an instance of a Collection (:external+python:py:class:`collections.abc.Collection`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Collection,), **kwargs)
      
     @classmethod
     def is_sequence(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`).
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs)
      
     @classmethod
     def is_mutable_sequence(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a MutableSequence (:external+python:py:class:`collections.abc.MutableSequence`).
+        Generate checker to check if the value is an instance of a MutableSequence (:external+python:py:class:`collections.abc.MutableSequence`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.MutableSequence,), **kwargs)
      
     @classmethod
     def is_byte_string(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a ByteString (:external+python:py:class:`collections.abc.ByteString`).
+        Generate checker to check if the value is an instance of a ByteString (:external+python:py:class:`collections.abc.ByteString`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.ByteString,), **kwargs)
      
     @classmethod
     def is_set(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Set (:external+python:py:class:`collections.abc.Set`).
+        Generate checker to check if the value is an instance of a Set (:external+python:py:class:`collections.abc.Set`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Set,), **kwargs)
      
     @classmethod
     def is_mutable_set(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a MutableSet (:external+python:py:class:`collections.abc.MutableSet`).
+        Generate checker to check if the value is an instance of a MutableSet (:external+python:py:class:`collections.abc.MutableSet`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.MutableSet,), **kwargs)
      
     @classmethod
     def is_mapping(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Mapping (:external+python:py:class:`collections.abc.Mapping`).
+        Generate checker to check if the value is an instance of a Mapping (:external+python:py:class:`collections.abc.Mapping`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Mapping,), **kwargs)
      
     @classmethod
     def is_mutable_mapping(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a MutableMapping (:external+python:py:class:`collections.abc.MutableMapping`).
+        Generate checker to check if the value is an instance of a MutableMapping (:external+python:py:class:`collections.abc.MutableMapping`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.MutableMapping,), **kwargs)
      
     @classmethod
     def is_mapping_view(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a MappingView (:external+python:py:class:`collections.abc.MappingView`).
+        Generate checker to check if the value is an instance of a MappingView (:external+python:py:class:`collections.abc.MappingView`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.MappingView,), **kwargs)
      
     @classmethod
     def is_items_view(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an ItemsView (:external+python:py:class:`collections.abc.ItemsView`).
+        Generate checker to check if the value is an instance of an ItemsView (:external+python:py:class:`collections.abc.ItemsView`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.ItemsView,), **kwargs)
      
     @classmethod
     def is_keys_view(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a KeysView (:external+python:py:class:`collections.abc.KeysView`).
+        Generate checker to check if the value is an instance of a KeysView (:external+python:py:class:`collections.abc.KeysView`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.KeysView,), **kwargs)
      
     @classmethod
     def is_values_view(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a ValuesView (:external+python:py:class:`collections.abc.ValuesView`).
+        Generate checker to check if the value is an instance of a ValuesView (:external+python:py:class:`collections.abc.ValuesView`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.ValuesView,), **kwargs)
      
     @classmethod
     def is_awaitable(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an Awaitable (:external+python:py:class:`collections.abc.Awaitable`).
+        Generate checker to check if the value is an instance of an Awaitable (:external+python:py:class:`collections.abc.Awaitable`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Awaitable,), **kwargs)
      
     @classmethod
     def is_async_iterable(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an AsyncIterable (:external+python:py:class:`collections.abc.AsyncIterable`).
+        Generate checker to check if the value is an instance of an AsyncIterable (:external+python:py:class:`collections.abc.AsyncIterable`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.AsyncIterable,), **kwargs)
      
     @classmethod
     def is_async_iterator(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an AsyncIterator (:external+python:py:class:`collections.abc.AsyncIterator`).
+        Generate checker to check if the value is an instance of an AsyncIterator (:external+python:py:class:`collections.abc.AsyncIterator`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.AsyncIterator,), **kwargs)
      
     @classmethod
     def is_coroutine(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Coroutine (:external+python:py:class:`collections.abc.Coroutine`).
+        Generate checker to check if the value is an instance of a Coroutine (:external+python:py:class:`collections.abc.Coroutine`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Coroutine,), **kwargs)
      
     @classmethod
     def is_async_generator(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of an AsyncGenerator (:external+python:py:class:`collections.abc.AsyncGenerator`).
+        Generate checker to check if the value is an instance of an AsyncGenerator (:external+python:py:class:`collections.abc.AsyncGenerator`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.AsyncGenerator,), **kwargs)
      
     @classmethod
     def is_buffer(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Buffer (:external+python:py:class:`collections.abc.Buffer`).
+        Generate checker to check if the value is an instance of a Buffer (:external+python:py:class:`collections.abc.Buffer`).
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Buffer,), **kwargs)
      
     @classmethod
     def list_of(cls, of_type: type, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `of_type`.
+        Generate checker to check if the value is an instance of a list and contains values of type `of_type`.
 
         Parameters
         ----------
         of_type: type
             The type to check against
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
      
     @classmethod
     def list_of_int(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `int`.
+        Generate checker to check if the value is an instance of a list and contains values of type `int`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def list_of_float(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `float`.
+        Generate checker to check if the value is an instance of a list and contains values of type `float`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
      
     @classmethod
     def list_of_str(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `str`.
+        Generate checker to check if the value is an instance of a list and contains values of type `str`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def list_of_tuple(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `tuple`.
+        Generate checker to check if the value is an instance of a list and contains values of type `tuple`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
      
     @classmethod
     def list_of_dict(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `dict`.
+        Generate checker to check if the value is an instance of a list and contains values of type `dict`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def list_of_list(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `list`.
+        Generate checker to check if the value is an instance of a list and contains values of type `list`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
      
     @classmethod
     def list_of_slice(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `slice`.
+        Generate checker to check if the value is an instance of a list and contains values of type `slice`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
      
     @classmethod
     def list_of_integer(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `int`.
+        Generate checker to check if the value is an instance of a list and contains values of type `int`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def list_of_number(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `int` or `float`.
+        Generate checker to check if the value is an instance of a list and contains values of type `int` or `float`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
      
     @classmethod
     def list_of_string(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `str`.
+        Generate checker to check if the value is an instance of a list and contains values of type `str`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def list_of_dictionary(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and contains values of type `dict`.
+        Generate checker to check if the value is an instance of a list and contains values of type `dict`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def tuple_of(cls, of_type: type, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `of_type`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `of_type`.
 
         Parameters
         ----------
         of_type: type
             The type to check against
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
      
     @classmethod
     def tuple_of_int(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `int`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `int`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def tuple_of_float(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `float`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `float`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
      
     @classmethod
     def tuple_of_str(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `str`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `str`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def tuple_of_tuple(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `tuple`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `tuple`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
      
     @classmethod
     def tuple_of_dict(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `dict`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `dict`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def tuple_of_list(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `list`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `list`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
      
     @classmethod
     def tuple_of_slice(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `slice`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `slice`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
      
     @classmethod
     def tuple_of_integer(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `int`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `int`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def tuple_of_number(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `int` or `float`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `int` or `float`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
      
     @classmethod
     def tuple_of_string(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `str`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `str`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def tuple_of_dictionary(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and contains values of type `dict`.
+        Generate checker to check if the value is an instance of a tuple and contains values of type `dict`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def sequence_of(cls, of_type: type, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `of_type`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `of_type`.
 
         Parameters
         ----------
         of_type: type
             The type to check against
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
      
     @classmethod
     def sequence_of_int(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def sequence_of_float(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `float`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `float`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
      
     @classmethod
     def sequence_of_str(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def sequence_of_tuple(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `tuple`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `tuple`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
      
     @classmethod
     def sequence_of_dict(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def sequence_of_list(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `list`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `list`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
      
     @classmethod
     def sequence_of_slice(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `slice`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `slice`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
      
     @classmethod
     def sequence_of_integer(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
      
     @classmethod
     def sequence_of_number(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int` or `float`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int` or `float`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
      
     @classmethod
     def sequence_of_string(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
      
     @classmethod
     def sequence_of_dictionary(cls, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
      
     @classmethod
     def has_attr(cls, attr: str, **kwargs) -> Self:
         """
-        Check if the value has attribute `attr`.
+        Generate checker to check if the value has attribute `attr`.
 
         Parameters
         ----------
         attr: str
             The attribute to check for
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_has_attr(attr=attr), **kwargs)
      
     @classmethod
     def has_method(cls, method: str, **kwargs) -> Self:
         """
-        Check if the value has method `method`.
+        Generate checker to check if the value has method `method`.
 
         Parameters
         ----------
         method: str
             The method to check for
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_has_method(method=method), **kwargs)
      
     @classmethod
     def has_property(cls, property: str, **kwargs) -> Self:
         """
-        Check if the value has property `property`.
+        Generate checker to check if the value has property `property`.
 
         Parameters
         ----------
         property: str
             The property to check for
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_has_property(property=property), **kwargs)
      
     @classmethod
     def starts_with(cls, start: str, **kwargs) -> Self:
         """
-        Check if the value is an instance of a str and starts with `start`.
+        Generate checker to check if the value is an instance of a str and starts with `start`.
 
         Parameters
         ----------
         start: str
             The correct start
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(str,), **kwargs) + cls(validators=check_starts_with(start=start), **kwargs)
      
     @classmethod
     def ends_with(cls, end: str, **kwargs) -> Self:
         """
-        Check if the value is an instance of a str and ends in `end`.
+        Generate checker to check if the value is an instance of a str and ends in `end`.
 
         Parameters
         ----------
         end: str
             The correct end
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(str,), **kwargs) + cls(validators=check_ends_with(end=end), **kwargs)
      
     @classmethod
     def numpy_dim(cls, dims: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and has `dims` dimensions.
+        Generate checker to check if the value is an instance of a numpy array and has `dims` dimensions.
 
         Parameters
         ----------
         dims: int
             The correct number of dimensions
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dims(dims=dims), **kwargs)
      
     @classmethod
     def numpy_shape(cls, shape: tuple[int], **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and has shape `shape`.
+        Generate checker to check if the value is an instance of a numpy array and has shape `shape`.
 
         Parameters
         ----------
         shape: tuple[int]
             The correct shape
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_shape(shape=shape), **kwargs)
      
     @classmethod
     def numpy_dtype(cls, dtype: type, **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and has dtype `dtype`.
+        Generate checker to check if the value is an instance of a numpy array and has dtype `dtype`.
 
         Parameters
         ----------
         dtype: type
             The correct dtype
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dtype(dtype=dtype), **kwargs)
      
     @classmethod
     def numpy_subdtype(cls, subdtype: type, **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and has subdtype `subdtype`.
+        Generate checker to check if the value is an instance of a numpy array and has subdtype `subdtype`.
 
         Parameters
         ----------
         subdtype: type
             The correct subdtype
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_subdtype(subdtype=subdtype), **kwargs)
      
     @classmethod
     def sequence_of_length(cls, length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and of length `length`.
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and of length `length`.
 
         Parameters
         ----------
         length: int
             The correct length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
     def sequence_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and of length between `min_length` and `max_length` (both inclusive).
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and of length between `min_length` and `max_length` (both inclusive).
 
         Parameters
         ----------
@@ -1765,25 +2524,35 @@ class BaseChecker:
             The minimum length
         max_length: int
             The maximum length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
     def list_of_length(cls, length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and of length `length`.
+        Generate checker to check if the value is an instance of a list and of length `length`.
 
         Parameters
         ----------
         length: int
             The correct length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
     def list_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a list and of length between `min_length` and `max_length` (both inclusive).
+        Generate checker to check if the value is an instance of a list and of length between `min_length` and `max_length` (both inclusive).
 
         Parameters
         ----------
@@ -1791,25 +2560,35 @@ class BaseChecker:
             The minimum length
         max_length: int
             The maximum length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(list,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
     def tuple_of_length(cls, length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and of length `length`.
+        Generate checker to check if the value is an instance of a tuple and of length `length`.
 
         Parameters
         ----------
         length: int
             The correct length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
     def tuple_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a tuple and of length between `min_length` and `max_length` (both inclusive).
+        Generate checker to check if the value is an instance of a tuple and of length between `min_length` and `max_length` (both inclusive).
 
         Parameters
         ----------
@@ -1817,25 +2596,35 @@ class BaseChecker:
             The minimum length
         max_length: int
             The maximum length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(tuple,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
     def numpy_array_of_length(cls, length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and of length `length`.
+        Generate checker to check if the value is an instance of a numpy array and of length `length`.
 
         Parameters
         ----------
         length: int
             The correct length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
      
     @classmethod
     def numpy_array_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and of length between `min_length` and `max_length` (both inclusive).
+        Generate checker to check if the value is an instance of a numpy array and of length between `min_length` and `max_length` (both inclusive).
 
         Parameters
         ----------
@@ -1843,34 +2632,54 @@ class BaseChecker:
             The minimum length
         max_length: int
             The maximum length
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
      
     @classmethod
     def is_path(cls, **kwargs) -> Self:
         """
-        Check if the value is a valid path.
+        Generate checker to check if the value is a valid path.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_path(), **kwargs)
      
     @classmethod
     def is_dir(cls, **kwargs) -> Self:
         """
-        Check if the value is a valid directory.
+        Generate checker to check if the value is a valid directory.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_dir(), **kwargs)
      
     @classmethod
     def is_file(cls, **kwargs) -> Self:
         """
-        Check if the value is a valid file.
+        Generate checker to check if the value is a valid file.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(validators=check_file(), **kwargs)
      
     @classmethod
     def numpy(cls, dims: int, shape: int | tuple[int], dtype: type, **kwargs) -> Self:
         """
-        Check if the value is an instance of a numpy array and has `dims` dimensions, shape `shape` and dtype `dtype`.
+        Generate checker to check if the value is an instance of a numpy array and has `dims` dimensions, shape `shape` and dtype `dtype`.
 
         Parameters
         ----------
@@ -1880,6 +2689,11 @@ class BaseChecker:
             The correct shape
         dtype: type
             The correct dtype
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
         """
         return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy(dims=dims, shape=shape, dtype=dtype), **kwargs)
     
@@ -1888,21 +2702,24 @@ class BaseChecker:
 def is_even():
     def checker(value):
         if value % 2 != 0:
-            return ValueError("Value must be even")
+            msg = "Value must be even"
+            return ValueError(msg)
         return None
     return checker
 
 def is_odd():
     def checker(value):
         if value % 2 == 0:
-            return ValueError("Value must be odd")
+            msg = "Value must be odd"
+            return ValueError(msg)
         return None
     return checker
 
 def check_contains(contains):
     def checker(value):
         if contains not in value:
-            return ValueError(f"Value must contain {contains}")
+            msg = f"Value must contain {contains}"
+            return ValueError(msg)
         return None
     return checker
 
@@ -1912,14 +2729,16 @@ def non_zero():
 def check_len(length):
     def checker(value):
         if len(value) != length:
-            return ValueError(f"Length must be {length}, not {len(value)}")
+            msg = f"Length must be {length}, not {len(value)}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_lens(min_length, max_length):
     def checker(value):
         if not min_length <= len(value) <= max_length:
-            return ValueError(f"Length must be between {min_length} and {max_length}, not {len(value)}")
+            msg = f"Length must be between {min_length} and {max_length}, not {len(value)}"
+            return ValueError(msg)
         return None
     return checker
 
@@ -1949,96 +2768,106 @@ def check_inside_type(type_):
                 if not isinstance(val, type_):
                     errors.append(f"value at {index} is of type {type(val)}")
             if len(errors) == 1:
-                return ValueError(
-                    f"Value must contain only values of type {type_}. Error: {errors[0]}",
-                )
-            return ValueError(
-                f"Value must contain only values of type {type_}. Errors: {', '.join(errors[:-1])}, and {errors[-1]}",
-            )
+                msg = f"Value must contain only values of type {type_}. Error: {errors[0]}"
+                return ValueError(msg)
+            msg = f"Value must contain only values of type {type_}. Errors: {', '.join(errors[:-1])}, and {errors[-1]}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_has_attr(attr):
     def checker(value):
         if not hasattr(value, attr):
-            return ValueError(f"Value must have attribute {attr}")
+            msg = f"Value must have attribute {attr}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_has_method(method):
     def checker(value):
         if not hasattr(value, method) or not callable(getattr(value, method)):
-            return ValueError(f"Value must have method {method}")
+            msg = f"Value must have method {method}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_has_property(property):
     def checker(value):
         if not hasattr(value, property) or not isinstance(getattr(value, property), property):
-            return ValueError(f"Value must have property {property}")
+            msg = f"Value must have property {property}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_starts_with(start):
     def checker(value):
         if not value.startswith(start):
-            return ValueError(f"Value must start with {start}")
+            msg = f"Value must start with {start}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_ends_with(end):
     def checker(value):
         if not value.endswith(end):
-            return ValueError(f"Value must end with {end}")
+            msg = f"Value must end with {end}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_numpy_dims(dims):
     def checker(value):
         if value.ndim != dims:
-            return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
+            msg = f"Value must have {dims} dimensions, not {value.ndim}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_numpy_shape(shape):
     def checker(value):
         if value.shape != shape:
-            return ValueError(f"Value must have shape {shape}, not {value.shape}")
+            msg = f"Value must have shape {shape}, not {value.shape}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_numpy_dtype(dtype):
     def checker(value):
         if value.dtype != dtype:
-            return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
+            msg = f"Value must have dtype {dtype}, not {value.dtype}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_numpy_subdtype(subdtype):
     def checker(value):
-        if np.issubdtype(value.dtype, subdtype):
-            return ValueError(f"Value must have subdtype of {subdtype}, not {value.dtype}")
+        if not np.issubdtype(value.dtype, subdtype):
+            msg = f"Value must have subdtype of {subdtype}, not {value.dtype}"
+            return ValueError(msg)
         return None
     return checker
 
 def check_path():
     def checker(value):
         if not os.path.exists(value):
-            return ValueError(f"Path `{value}` does not exist")
+            msg = f"Path `{value}` does not exist"
+            return ValueError(msg)
         return None
     return checker
 
 def check_dir():
     def checker(value):
         if not os.path.isdir(value):
-            return ValueError(f"Path `{value}` is not a directory")
+            msg = f"Path `{value}` is not a directory"
+            return ValueError(msg)
         return None
     return checker
 
 def check_file():
     def checker(value):
         if not os.path.isfile(value):
-            return ValueError(f"Path `{value}` is not a file")
+            msg = f"Path `{value}` is not a file"
+            return ValueError(msg)
         return None
     return checker
 
@@ -2046,13 +2875,16 @@ def check_numpy(dims, shape, dtype):
     def checker(value):
         nonlocal shape
         if value.ndim != dims:
-            return ValueError(f"Value must have {dims} dimensions, not {value.ndim}")
+            msg = f"Value must have {dims} dimensions, not {value.ndim}"
+            return ValueError(msg)
         if isinstance(shape, int):
             shape = (shape,)
         if value.shape != shape:
-            return ValueError(f"Value must have shape {shape}, not {value.shape}")
+            msg = f"Value must have shape {shape}, not {value.shape}"
+            return ValueError(msg)
         if value.dtype != dtype:
-            return ValueError(f"Value must have dtype {dtype}, not {value.dtype}")
+            msg = f"Value must have dtype {dtype}, not {value.dtype}"
+            return ValueError(msg)
         return None
     return checker
 
