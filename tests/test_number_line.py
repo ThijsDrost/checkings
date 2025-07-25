@@ -2,7 +2,7 @@ import sys
 
 sys.path.append(".")  # Adjust the path to import from the parent directory
 
-from checking.number_line import Bound, Range, EmptyRange
+from checkings.number_line import Bound, Range, EmptyRange
 
 
 def test():

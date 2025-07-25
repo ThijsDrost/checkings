@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterable, Sequence
 from dataclasses import KW_ONLY, dataclass
 import numpy as np
 
-from checking._no_val import NoValue
+from checkings._no_val import NoValue
 
 VALIDATOR_FUNCS = {}
 

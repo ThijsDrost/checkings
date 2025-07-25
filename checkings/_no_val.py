@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class NoVal:
-    __module__ = "checking"
+    __module__ = "checkings"
 
     def __iter__(self):
         return self

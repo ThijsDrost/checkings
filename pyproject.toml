@@ -1,5 +1,5 @@
 [project]
-name = "checking"
+name = "checkings"
 requires-python = ">= 3.12"
 
 dependencies = [
