@@ -185,17 +185,18 @@ class BaseChecker:
                 if isinstance(value, t):
                     break
             else:
-                return ValueError(
-                    f"Value ({type(value)}) must be one of the following types:"
-                    f" {self._tuple_str([t.__name__ for t in self._types])}",
-                )
+                if len(self._types) == 1:
+                    msg = f"Value ({value}) must be of type {self._types[0].__name__}, found {type(value).__name__}"
+                else:
+                    msg = (f"Value ({value}) must be one of the following types: "
+                           f"{self._tuple_str([t.__name__ for t in self._types])}, found {type(value).__name__}")
+                return TypeError(msg)
         return None
 
     def _check_literal(self, value):
         if (self._literals is not NoValue) and (value not in self._literals):
-            return ValueError(
-                f"Value ({value}) must be one of the following: {self._tuple_str(self._literals)}",
-            )
+            msg = f"Value ({value}) must be one of the following: {self._tuple_str(self._literals)}"
+            return ValueError(msg)
         return None
 
     def _check_number_line(self, value):
@@ -210,10 +211,9 @@ class BaseChecker:
                 try:
                     message = validator(value)
                 except BaseException as e:  # noqa: BLE001
+                    msg = f"Validator named {validator.__name__} raised an exception: {e}",
                     errors.append(
-                        ValueError(
-                            f"Validator named {validator.__name__} raised an exception: {e}",
-                        ),
+                        ValueError(msg)
                     )
                 else:
                     errors.append(message)
@@ -237,7 +237,7 @@ class BaseChecker:
             errs.append(val_err)
         if errs:
             msg = f"{name} has incorrect value: {value}"
-            raise ExceptionGroup(msg, errs)
+            raise ValidatorError(msg, errs)
 
     @staticmethod
     def _tuple_str(values):
