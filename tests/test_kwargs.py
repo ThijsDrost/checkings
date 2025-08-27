@@ -16,13 +16,13 @@ def test_default_kwargs():
         'b': 'hi',
     }
 
-    values = default_kwargs(vals, **defaults)
+    values = default_kwargs(vals, defaults)
     assert values == vals
 
-    values = default_kwargs({}, **defaults)
+    values = default_kwargs({}, defaults)
     assert values == defaults
 
-    values = default_kwargs({'a': 2}, **defaults)
+    values = default_kwargs({'a': 2}, defaults)
     assert values == {'a': 2, 'b': 'hello'}
 
 def test_check_kwargs():
@@ -43,17 +43,17 @@ def test_check_kwargs():
     with raises(TypeError):
         check_kwargs('some_function', {'a': 'nope', 'b': 'hi'}, kwargs_checker)
     with raises(TypeError):
-        check_kwargs('some_function', {'a': 2}, kwargs_checker, b=1)
+        check_kwargs('some_function', {'a': 2}, kwargs_checker, {"b": 1})
     with raises(TypeError):
         check_kwargs('some_function', {'a': 2, 'b': 'hi', 'c': 1}, kwargs_checker)
 
-    values = check_kwargs('some_function', vals, kwargs_checker, **defaults)
+    values = check_kwargs('some_function', vals, kwargs_checker, defaults)
     assert values == vals
 
-    values = check_kwargs('some_function', {}, kwargs_checker, **defaults)
+    values = check_kwargs('some_function', {}, kwargs_checker, defaults)
     assert values == defaults
 
-    values = check_kwargs('some_function', {'a': 2}, kwargs_checker, **defaults)
+    values = check_kwargs('some_function', {'a': 2}, kwargs_checker, defaults)
     assert values == {'a': 2, 'b': 'hello'}
 
 

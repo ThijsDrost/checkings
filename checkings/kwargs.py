@@ -3,7 +3,7 @@ from typing import Any
 from ._validators import Validator
 from ._validator_error import ValidatorError
 
-def default_kwargs(kwargs: dict[str, Any], **defaults: Any) -> dict[str, Any]:
+def default_kwargs(kwargs: dict[str, Any], defaults: Any) -> dict[str, Any]:
     """
     Fill in default values for missing keyword arguments.
 
@@ -29,7 +29,7 @@ def default_kwargs(kwargs: dict[str, Any], **defaults: Any) -> dict[str, Any]:
     defaults.update(kwargs)
     return defaults
 
-def check_kwargs(function_name, kwargs, key_type: dict[str, type | Validator], **defaults):
+def check_kwargs(function_name, kwargs, key_type: dict[str, type | Validator], defaults=None):
     """
     Check the types of keyword arguments and fill in default values.
 
@@ -46,7 +46,7 @@ def check_kwargs(function_name, kwargs, key_type: dict[str, type | Validator], *
         The keyword arguments to check.
     key_type: dict[str, type | Validator]
         A dictionary mapping keyword argument names to their expected types or Validator instances.
-    defaults: Any
+    defaults: dict[str, Any], optional
         Default values for keyword arguments.
 
     Returns
@@ -91,5 +91,8 @@ def check_kwargs(function_name, kwargs, key_type: dict[str, type | Validator], *
                 raise TypeError(msg)
 
     check(kwargs, key_type, defaults=False)
-    check(defaults, key_type, defaults=True)
-    return default_kwargs(kwargs, **defaults)
+    if defaults is not None:
+        check(defaults, key_type, defaults=True)
+    else:
+        defaults = {}
+    return default_kwargs(kwargs, defaults)
