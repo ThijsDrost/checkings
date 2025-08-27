@@ -216,7 +216,8 @@ class BaseChecker:
                         ValueError(msg)
                     )
                 else:
-                    errors.append(message)
+                    if isinstance(message, Exception):
+                        errors.append(message)
             if errors:
                 return ValidatorError("Value did not pass all validators", errors)
         return None
