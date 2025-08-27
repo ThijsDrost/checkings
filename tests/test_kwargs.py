@@ -2,7 +2,7 @@ import sys
 
 from pytest import raises
 
-sys.path.append(".")
+sys.path.append(".")  # Adjust the path to import from the parent directory
 from checkings import check_kwargs, default_kwargs, Validator, ValidatorError
 
 
@@ -65,4 +65,11 @@ def test_check_kwargs():
     with raises(ValueError) as e:
         check_kwargs('some_function', {'a': 2, 'b': 'h'}, kwargs_checker2)
     assert isinstance(e.value.__cause__, ValidatorError)
+
+    kwargs_checker3 = {
+        'a': int,
+        'b': 'jo',
+    }
+    with raises(TypeError) as e:
+        check_kwargs('some_function', {'a': 2, 'b': 'h'}, kwargs_checker3)
 
