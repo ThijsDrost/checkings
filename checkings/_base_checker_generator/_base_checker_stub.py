@@ -151,7 +151,8 @@ class BaseChecker:
         def add_values(a, b, name):
             if a is not NoValue:
                 if b is not NoValue:
-                    raise ValueError(f"Cannot add two {name}")
+                    msg = f"Cannot add two {name}"
+                    raise ValueError(msg)
                 result = a
             else:
                 result = b
@@ -211,10 +212,8 @@ class BaseChecker:
                 try:
                     message = validator(value)
                 except BaseException as e:  # noqa: BLE001
-                    msg = f"Validator named {validator.__name__} raised an exception: {e}",
-                    errors.append(
-                        ValueError(msg)
-                    )
+                    msg = f"Validator named {validator.__name__} raised an exception: {e}"
+                    errors.append(ValueError(msg))
                 else:
                     if isinstance(message, Exception):
                         errors.append(message)
