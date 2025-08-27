@@ -1,18 +1,19 @@
 from dataclasses import dataclass
+import sys
 
 from pytest import raises
 
+sys.path.append(".")  # Adjust the path to import from the parent directory
 from checkings import Descriptor, ValidatorError
 
 
-@dataclass
-class Tester:
-    value: float = Descriptor.positive_float(include_zero=True)
-    value2: int = Descriptor.is_int()
-    value3: float = Descriptor.is_float(default=1.5)
-
-
 def test_descriptor():
+    @dataclass
+    class Tester:
+        value: float = Descriptor.positive_float(include_zero=True)
+        value2: int = Descriptor.is_int()
+        value3: float = Descriptor.is_float(default=1.5)
+
     with raises(ValidatorError) as e:
         Tester(value=-1.0, value2=1, value3=1.5)
     assert isinstance(e.value.exceptions[0], ValueError)

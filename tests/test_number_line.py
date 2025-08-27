@@ -1,7 +1,6 @@
 import sys
 
 sys.path.append(".")  # Adjust the path to import from the parent directory
-
 from checkings.number_line import Bound, Range, EmptyRange
 
 
