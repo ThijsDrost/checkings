@@ -1,7 +1,44 @@
 import inspect
+from typing import ParamSpec, TypeVar
 
 from ._base_checker import BaseChecker
 from ._no_val import NoValue
+
+P = ParamSpec('P')
+T = TypeVar('T')
+
+
+def _calc_new_signature(old_func):
+    old_sig = inspect.signature(old_func)
+    old_parameters = list(old_sig.parameters.values())
+
+    for p in old_parameters:
+        if p.kind == p.VAR_POSITIONAL:
+            msg = f"Cannot use `*args` for {old_func.__name__}, since the number of parameters must be fixed."
+            raise ValueError(msg)
+
+    parameters_names = tuple(par.name for par in old_parameters)
+    if ("name" in parameters_names) or ("value" in parameters_names):
+        msg = (
+            f"Cannot have `name` or `value` as a parameter name for {old_func.__name__},"
+            f" since these are used for the call method.",
+        )
+        raise ValueError(msg)
+
+    params = list(old_sig.parameters.values())
+    for i, param in enumerate(params):
+        if param.kind == inspect.Parameter.VAR_POSITIONAL:
+            break
+        if param.kind == inspect.Parameter.VAR_KEYWORD:
+            break
+    else:
+        i = len(params)
+
+    name_param = inspect.Parameter("name", inspect.Parameter.KEYWORD_ONLY, default=None)
+    value_param = inspect.Parameter("value", inspect.Parameter.KEYWORD_ONLY, default=None)
+    params.insert(i, name_param)
+    params.insert(i, value_param)
+    return old_sig.replace(parameters=params)
 
 
 class _DirectCallMeta(type):
@@ -14,8 +51,9 @@ class _DirectCallMeta(type):
         _attributes = [a for a in dir(new_class) if not a.startswith("_") and callable(getattr(new_class, a))]
         for a in _attributes:
             docs = inspect.cleandoc(getattr(new_class, a).__doc__)
-            setattr(new_class, a, _DirectCallMeta._combine_call(getattr(new_class, a)))
-            func = getattr(new_class, a)
+            new_sig = _calc_new_signature(getattr(new_class, a))
+
+            setattr(new_class, a, _DirectCallMeta._combine_call(getattr(new_class, a), new_sig))
 
             if docs is None:
                 docs = ""
@@ -59,12 +97,12 @@ class _DirectCallMeta(type):
             docs = add_to_docs(docs, "Parameters", param_docs)
             docs = add_to_docs(docs, "Notes", notes)
 
-            func.__doc__ = docs
+            getattr(new_class, a).__doc__ = docs
 
         return new_class
 
     @staticmethod
-    def _combine_call(func):
+    def _combine_call(func, new_signature):
         """
         Combines the parameters of the function with the call to the validator, so that it can be called directly
 
@@ -77,75 +115,39 @@ class _DirectCallMeta(type):
         -------
             callable | None
         """
-        parameters = list(inspect.signature(func).parameters.values())
-
-        min_args = 0
-        min_kwargs = 0
-        argkwargs = []
-        num_parameters = len(parameters)
-        for p in parameters:
-            if p.kind == p.VAR_POSITIONAL:
-                msg = f"Cannot use `*args` for {func.__name__}, since the number of parameters must be fixed."
-                raise ValueError(msg)
-            if p.kind == p.VAR_KEYWORD:
-                num_parameters -= 1
-                continue
-            if p.default is not p.empty:
-                continue
-
-            if p.kind == p.POSITIONAL_ONLY:
-                min_args += 1
-            elif p.kind == p.KEYWORD_ONLY:
-                min_kwargs += 1
-            elif p.kind == p.POSITIONAL_OR_KEYWORD:
-                argkwargs += [p.name]
-
-        parameters_names = tuple(par.name for par in parameters)
-        if ("name" in parameters_names) or ("value" in parameters_names):
-            msg = (
-                f"Cannot have `name` or `value` as a parameter name for {func.__name__},"
-                f" since these are used for the call method.",
-            )
-            raise ValueError(msg)
-
         def call(*args, **kwargs):
-            nonlocal min_args, min_kwargs, argkwargs
-            argkwargs = argkwargs.copy()
+            nonlocal new_signature
+            bound = new_signature.bind(*args, **kwargs)
+            bound.apply_defaults()
 
             call_together = False
-            if (len(args) + len(kwargs)) > num_parameters:
-                call_together = True
-
-            num = 2
-            call_kwargs = {}
-            for key in ["value", "name"]:
-                if key in kwargs:
-                    call_kwargs[key] = kwargs[key]
-                    del kwargs[key]
-                    num -= 1
+            if bound.arguments["name"] is not None:
+                if bound.arguments["value"] is None:
+                    msg = f"When calling {func.__name__}() with a name, a value must also be provided."
+                    raise TypeError(msg)
+                else:
                     call_together = True
-
-            for key in kwargs:
-                if key in argkwargs:
-                    argkwargs.pop(argkwargs.index(key))
-
-            if call_together:
-                if len(args) < num + min_args + len(argkwargs):
-                    num_missing = num + min_args + len(argkwargs) - len(args)
-                    msg = (
-                        f"{func.__name__}() missing {num_missing} positional argument{'s' if num_missing > 1 else ''}"
-                        f" (it needs {min_args + len(argkwargs)} itself, plus {num} for the direct call)."
-                    )
+            if bound.arguments["value"] is not None:
+                if bound.arguments["name"] is None:
+                    msg = f"When calling {func.__name__}() with a value, a name must also be provided."
                     raise TypeError(msg)
 
-                return func(*args[:-num], **kwargs)(*args[-num:], **call_kwargs)
+            if call_together:
+                parameters = bound
+                args = parameters.args
+                kwargs = parameters.kwargs.copy()
+                for name in ("value", "name"):
+                    if name in kwargs:
+                        kwargs.pop(name)
+                    else:
+                        args = args[:-1]
+                return func(*args, **kwargs)(bound.arguments["value"], bound.arguments["name"])
             return func(*args, **kwargs)
-
         return call
 
 
 class Validator(BaseChecker, metaclass=_DirectCallMeta):
-    def __call__(self, value, name):
+    def __call__(self, value: T, name: str) -> T:
         self._update()
         if value is NoValue or ((value is None) and self._replace_none):
             default = self._get_default()
