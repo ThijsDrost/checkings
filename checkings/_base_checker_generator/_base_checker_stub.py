@@ -35,21 +35,22 @@ class BaseChecker:
         """
         Parameters
         ----------
-        default: any
+        default: object
             The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
             considered mutable if it does not have a `__hash__` method.
-        default_factory: Callable[[], any]
+        default_factory: Callable[[], object]
             A function that returns the default value of the attribute.
         number_line: NumberLine
-            The number line that the attribute must be on
-        literals: tuple[any, ...] | any
-            The literals that the attribute must be
+            A NumberLine instance which the attribute must lie on.
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be one of
         types: tuple[type, ...] | type
-            The types that the attribute must be
-        converter: Callable[[any], any]
-            A function that converts the attribute to the correct type
-        validators: tuple[Callable[[any], Exception | None], ...] | Callable[[any], Exception | None]
-            A tuple of functions that check if the attribute is valid
+            The types that the attribute must be one of
+        converter: Callable[[object], object]
+            A function that converts the attribute to a new value
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid. The value is assumed correct when the function
+            neither returns nor raises and exception.
         replace_none: bool
             Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
             default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with

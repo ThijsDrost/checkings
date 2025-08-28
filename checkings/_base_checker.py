@@ -1,3 +1,5 @@
+# ruff: noqa: E501
+
 from __future__ import annotations
 
 import collections  # noqa: F401
@@ -35,20 +37,20 @@ class BaseChecker:
         """
         Parameters
         ----------
-        default: any
+        default: object
             The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
             considered mutable if it does not have a `__hash__` method.
-        default_factory: Callable[[], any]
+        default_factory: Callable[[], object]
             A function that returns the default value of the attribute.
         number_line: NumberLine
             The number line that the attribute must be on
-        literals: tuple[any, ...] | any
+        literals: tuple[object, ...] | object
             The literals that the attribute must be
         types: tuple[type, ...] | type
             The types that the attribute must be
-        converter: Callable[[any], any]
+        converter: Callable[[object], object]
             A function that converts the attribute to the correct type
-        validators: tuple[Callable[[any], Exception | None], ...] | Callable[[any], Exception | None]
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
             A tuple of functions that check if the attribute is valid
         replace_none: bool
             Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
@@ -268,211 +270,7 @@ class BaseChecker:
         return wrapper
  
     @classmethod
-    def default(cls, default: any, **kwargs) -> Self:
-        """
-        Set default value to `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs)
-     
-    @classmethod
-    def default_int(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of an int with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(int,), **kwargs)
-     
-    @classmethod
-    def default_float(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a float with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(float,), **kwargs)
-     
-    @classmethod
-    def default_str(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a str with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(str,), **kwargs)
-     
-    @classmethod
-    def default_tuple(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a tuple with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(tuple,), **kwargs)
-     
-    @classmethod
-    def default_dict(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a dict with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(dict,), **kwargs)
-     
-    @classmethod
-    def default_list(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a list with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(list,), **kwargs)
-     
-    @classmethod
-    def default_slice(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a slice with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(slice,), **kwargs)
-     
-    @classmethod
-    def default_integer(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of an integer with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(int,), **kwargs)
-     
-    @classmethod
-    def default_number(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a number with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(int, float), **kwargs)
-     
-    @classmethod
-    def default_string(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a string with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(str,), **kwargs)
-     
-    @classmethod
-    def default_dictionary(cls, default: any, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a dictionary with default value `default`.
-
-        Parameters
-        ----------
-        default: any
-            The default value
-        
-        Returns
-        -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(default=default, **kwargs) + cls(types=(dict,), **kwargs)
-     
-    @classmethod
-    def integer_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def integer_greater_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is greater than `min_val`.
 
@@ -483,15 +281,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def integer_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def integer_larger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is larger than `min_val`.
 
@@ -502,15 +327,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def integer_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def integer_bigger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is bigger than `min_val`.
 
@@ -521,15 +373,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def integer_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def integer_smaller_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is smaller than `max_val`.
 
@@ -540,15 +419,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def integer_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def integer_less_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is less than `max_val`.
 
@@ -559,15 +465,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def integer_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
+    def integer_in_range(cls, start_val: float, end_val: float, *, start_inclusive: bool = True, end_inclusive: bool = True, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is between `start_val` and `end_val`.
 
@@ -582,15 +515,42 @@ class BaseChecker:
         end_inclusive: bool = True
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def integer_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
+    def integer_between(cls, start_val: float, end_val: float, *, start_inclusive: bool = False, end_inclusive: bool = False, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is between `start_val` and `end_val`.
 
@@ -605,15 +565,42 @@ class BaseChecker:
         end_inclusive: bool = False
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def number_greater_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is greater than `min_val`.
 
@@ -624,15 +611,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def number_larger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is larger than `min_val`.
 
@@ -643,15 +657,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def number_bigger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is bigger than `min_val`.
 
@@ -662,15 +703,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def number_smaller_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is smaller than `max_val`.
 
@@ -681,15 +749,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def number_less_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is less than `max_val`.
 
@@ -700,15 +795,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
+    def number_in_range(cls, start_val: float, end_val: float, *, start_inclusive: bool = True, end_inclusive: bool = True, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
@@ -723,15 +845,42 @@ class BaseChecker:
         end_inclusive: bool = True
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def number_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
+    def number_between(cls, start_val: float, end_val: float, *, start_inclusive: bool = False, end_inclusive: bool = False, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
@@ -746,15 +895,42 @@ class BaseChecker:
         end_inclusive: bool = False
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def float_greater_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is greater than `min_val`.
 
@@ -765,15 +941,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def float_larger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is larger than `min_val`.
 
@@ -784,15 +987,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def float_bigger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is bigger than `min_val`.
 
@@ -803,15 +1033,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def float_smaller_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is smaller than `max_val`.
 
@@ -822,15 +1079,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def float_less_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is less than `max_val`.
 
@@ -841,15 +1125,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
+    def float_in_range(cls, start_val: float, end_val: float, *, start_inclusive: bool = True, end_inclusive: bool = True, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is between `start_val` and `end_val`.
 
@@ -864,15 +1175,42 @@ class BaseChecker:
         end_inclusive: bool = True
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def float_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
+    def float_between(cls, start_val: float, end_val: float, *, start_inclusive: bool = False, end_inclusive: bool = False, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float and is between `start_val` and `end_val`.
 
@@ -887,15 +1225,42 @@ class BaseChecker:
         end_inclusive: bool = False
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(float,),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def int_greater_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is greater than `min_val`.
 
@@ -906,15 +1271,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def int_larger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is larger than `min_val`.
 
@@ -925,15 +1317,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def int_bigger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is bigger than `min_val`.
 
@@ -944,15 +1363,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def int_smaller_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is smaller than `max_val`.
 
@@ -963,15 +1409,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def int_less_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is less than `max_val`.
 
@@ -982,15 +1455,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
+    def int_in_range(cls, start_val: float, end_val: float, *, start_inclusive: bool = True, end_inclusive: bool = True, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is between `start_val` and `end_val`.
 
@@ -1005,15 +1505,42 @@ class BaseChecker:
         end_inclusive: bool = True
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def int_between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
+    def int_between(cls, start_val: float, end_val: float, *, start_inclusive: bool = False, end_inclusive: bool = False, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int and is between `start_val` and `end_val`.
 
@@ -1028,15 +1555,42 @@ class BaseChecker:
         end_inclusive: bool = False
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int,),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def positive_integer(cls, include_zero: bool, **kwargs) -> Self:
+    def positive_integer(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value positive and is an instance of an integer.
 
@@ -1045,15 +1599,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
+        return cls(number_line=NumberLine.positive(include_zero=include_zero),) + cls(types=(int,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def positive_number(cls, include_zero: bool, **kwargs) -> Self:
+    def positive_number(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value positive and is an instance of a number.
 
@@ -1062,15 +1643,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(int, float), **kwargs)
+        return cls(number_line=NumberLine.positive(include_zero=include_zero),) + cls(types=(int, float),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def positive_float(cls, include_zero: bool, **kwargs) -> Self:
+    def positive_float(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value positive and is an instance of a float.
 
@@ -1079,15 +1687,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(float,), **kwargs)
+        return cls(number_line=NumberLine.positive(include_zero=include_zero),) + cls(types=(float,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def positive_int(cls, include_zero: bool, **kwargs) -> Self:
+    def positive_int(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value positive and is an instance of an int.
 
@@ -1096,15 +1731,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
+        return cls(number_line=NumberLine.positive(include_zero=include_zero),) + cls(types=(int,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def negative_integer(cls, include_zero: bool, **kwargs) -> Self:
+    def negative_integer(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value negative and is an instance of an integer.
 
@@ -1113,15 +1775,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
+        return cls(number_line=NumberLine.negative(include_zero=include_zero),) + cls(types=(int,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def negative_number(cls, include_zero: bool, **kwargs) -> Self:
+    def negative_number(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value negative and is an instance of a number.
 
@@ -1130,15 +1819,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(int, float), **kwargs)
+        return cls(number_line=NumberLine.negative(include_zero=include_zero),) + cls(types=(int, float),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def negative_float(cls, include_zero: bool, **kwargs) -> Self:
+    def negative_float(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value negative and is an instance of a float.
 
@@ -1147,15 +1863,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(float,), **kwargs)
+        return cls(number_line=NumberLine.negative(include_zero=include_zero),) + cls(types=(float,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def negative_int(cls, include_zero: bool, **kwargs) -> Self:
+    def negative_int(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value negative and is an instance of an int.
 
@@ -1164,15 +1907,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs) + cls(types=(int,), **kwargs)
+        return cls(number_line=NumberLine.negative(include_zero=include_zero),) + cls(types=(int,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def greater_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def greater_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is greater than `min_val`.
 
@@ -1183,15 +1953,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def larger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def larger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is larger than `min_val`.
 
@@ -1202,15 +1999,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def bigger_than(cls, min_val: float, inclusive: bool, **kwargs) -> Self:
+    def bigger_than(cls, min_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is bigger than `min_val`.
 
@@ -1221,15 +2045,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the minimum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.bigger_than_float(value=min_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def smaller_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def smaller_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is smaller than `max_val`.
 
@@ -1240,15 +2091,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def less_than(cls, max_val: float, inclusive: bool, **kwargs) -> Self:
+    def less_than(cls, max_val: float, inclusive: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is less than `max_val`.
 
@@ -1259,15 +2137,42 @@ class BaseChecker:
         inclusive: bool
             Whether the value is allowed to be equal to the maximum value
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.smaller_than_float(value=max_val, inclusive=inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def in_range(cls, start_val: float, end_val: float, start_inclusive: bool = True, end_inclusive: bool = True, **kwargs) -> Self:
+    def in_range(cls, start_val: float, end_val: float, *, start_inclusive: bool = True, end_inclusive: bool = True, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
@@ -1282,15 +2187,42 @@ class BaseChecker:
         end_inclusive: bool = True
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def between(cls, start_val: float, end_val: float, start_inclusive: bool = False, end_inclusive: bool = False, **kwargs) -> Self:
+    def between(cls, start_val: float, end_val: float, *, start_inclusive: bool = False, end_inclusive: bool = False, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and is between `start_val` and `end_val`.
 
@@ -1305,15 +2237,42 @@ class BaseChecker:
         end_inclusive: bool = False
             Whether the upper bound is included in the range
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.between_float(start=start_val, end=end_val, start_inclusive=start_inclusive, end_inclusive=end_inclusive),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def positive(cls, include_zero: bool, **kwargs) -> Self:
+    def positive(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and positive.
 
@@ -1322,15 +2281,42 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.positive(include_zero=include_zero), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.positive(include_zero=include_zero),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def negative(cls, include_zero: bool, **kwargs) -> Self:
+    def negative(cls, include_zero: bool, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number and negative.
 
@@ -1339,39 +2325,120 @@ class BaseChecker:
         include_zero: bool
             Whether the value is allowed to be equal to zero
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs) + cls(number_line=NumberLine.negative(include_zero=include_zero), **kwargs)
+        return cls(types=(int, float),) + cls(number_line=NumberLine.negative(include_zero=include_zero),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def even(cls, **kwargs) -> Self:
+    def even(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer and is even.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(int,), **kwargs) + cls(validators=is_even(), **kwargs)
-     
-    @classmethod
-    def odd(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of an integer and is odd.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs) + cls(validators=is_odd(), **kwargs)
+        return cls(types=(int,),) + cls(validators=is_even(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def contains(cls, contains: str, **kwargs) -> Self:
+    def odd(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of an integer and is odd.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(int,),) + cls(validators=is_odd(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def contains(cls, contains: str, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value contains `contains`.
 
@@ -1380,44 +2447,125 @@ class BaseChecker:
         contains: str
             The value to contain
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(validators=check_contains(contains=contains), **kwargs)
-     
-    @classmethod
-    def literals(cls, literals: collections.abc.Sequence, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is one of `literals`.
-
-        Parameters
-        ----------
-        literals: collections.abc.Sequence
-            The literals to check against
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(literals=literals, **kwargs)
+        return cls(validators=check_contains(contains=contains),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    # @classmethod
+    # def literals(cls, literals: collections.abc.Sequence, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+    #     """
+    #     Generate checker to check if the value is one of `literals`.
+    #
+    #     Parameters
+    #     ----------
+    #     literals: collections.abc.Sequence
+    #         The literals to check against
+    #
+    #     Other Parameters
+    #     -------
+    #     default: object
+    #         The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+    #         considered mutable if it does not have a `__hash__` method.
+    #     default_factory: Callable[[], object]
+    #         A function that returns the default value of the attribute.
+    #     number_line: NumberLine
+    #         The number line that the attribute must be on
+    #     literals: tuple[object, ...] | object
+    #         The literals that the attribute must be
+    #     types: tuple[type, ...] | type
+    #         The types that the attribute must be
+    #     converter: Callable[[object], object]
+    #         A function that converts the attribute to the correct type
+    #     validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+    #         A tuple of functions that check if the attribute is valid
+    #     replace_none: bool
+    #         Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+    #         default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+    #         the default value.
+    #
+    #     Returns
+    #     -------
+    #     Self
+    #         A new instance of the class with the given validators and other parameters applied
+    #
+    #     Notes
+    #     -------
+    #     The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+    #     raise errors when also trying to set the same value manually.
+    #     """
+    #     return cls(literals=literals,)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def non_zero(cls, **kwargs) -> Self:
+    def non_zero(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is not zero.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(number_line=non_zero(), **kwargs)
+        return cls(number_line=non_zero(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def length(cls, length: int, **kwargs) -> Self:
+    def length(cls, length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value of length `length`.
 
@@ -1426,15 +2574,42 @@ class BaseChecker:
         length: int
             The correct length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_len(length=length), **kwargs)
+        return cls(validators=check_len(length=length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
+    def lengths(cls, min_length: int, max_length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value of length between `min_length` and `max_length` (both inclusive).
 
@@ -1445,459 +2620,1485 @@ class BaseChecker:
         max_length: int
             The maximum length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
+        return cls(validators=check_lens(min_length=min_length, max_length=max_length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sorted(cls, **kwargs) -> Self:
+    def sorted(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is sorted.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_sorted(), **kwargs)
+        return cls(validators=check_sorted(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_int(cls, **kwargs) -> Self:
+    def is_int(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an int.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs)
+        return cls(types=(int,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_float(cls, **kwargs) -> Self:
+    def is_float(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a float.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(float,), **kwargs)
+        return cls(types=(float,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_str(cls, **kwargs) -> Self:
+    def is_str(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a str.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(str,), **kwargs)
+        return cls(types=(str,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_tuple(cls, **kwargs) -> Self:
+    def is_tuple(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs)
+        return cls(types=(tuple,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_dict(cls, **kwargs) -> Self:
+    def is_dict(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a dict.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(dict,), **kwargs)
+        return cls(types=(dict,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_list(cls, **kwargs) -> Self:
+    def is_list(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs)
+        return cls(types=(list,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_slice(cls, **kwargs) -> Self:
+    def is_slice(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a slice.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(slice,), **kwargs)
+        return cls(types=(slice,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_integer(cls, **kwargs) -> Self:
+    def is_integer(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an integer.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int,), **kwargs)
+        return cls(types=(int,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_number(cls, **kwargs) -> Self:
+    def is_number(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a number.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(int, float), **kwargs)
+        return cls(types=(int, float),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_string(cls, **kwargs) -> Self:
+    def is_string(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a string.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(str,), **kwargs)
+        return cls(types=(str,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_dictionary(cls, **kwargs) -> Self:
+    def is_dictionary(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a dictionary.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(dict,), **kwargs)
+        return cls(types=(dict,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_container(cls, **kwargs) -> Self:
+    def is_container(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Container (:external+python:py:class:`collections.abc.Container`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Container,), **kwargs)
+        return cls(types=(collections.abc.Container,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_hashable(cls, **kwargs) -> Self:
+    def is_hashable(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an Hashable (:external+python:py:class:`collections.abc.Hashable`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Hashable,), **kwargs)
+        return cls(types=(collections.abc.Hashable,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_iterable(cls, **kwargs) -> Self:
+    def is_iterable(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an Iterable (:external+python:py:class:`collections.abc.Iterable`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Iterable,), **kwargs)
+        return cls(types=(collections.abc.Iterable,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_reversible(cls, **kwargs) -> Self:
+    def is_reversible(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Reversible (:external+python:py:class:`collections.abc.Reversible`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Reversible,), **kwargs)
+        return cls(types=(collections.abc.Reversible,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_generator(cls, **kwargs) -> Self:
+    def is_generator(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Generator (:external+python:py:class:`collections.abc.Generator`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Generator,), **kwargs)
+        return cls(types=(collections.abc.Generator,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_sized(cls, **kwargs) -> Self:
+    def is_sized(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sized (:external+python:py:class:`collections.abc.Sized`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sized,), **kwargs)
+        return cls(types=(collections.abc.Sized,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_callable(cls, **kwargs) -> Self:
+    def is_callable(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Callable (:external+python:py:class:`collections.abc.Callable`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Callable,), **kwargs)
+        return cls(types=(collections.abc.Callable,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_collection(cls, **kwargs) -> Self:
+    def is_collection(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Collection (:external+python:py:class:`collections.abc.Collection`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Collection,), **kwargs)
+        return cls(types=(collections.abc.Collection,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_sequence(cls, **kwargs) -> Self:
+    def is_sequence(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs)
+        return cls(types=(collections.abc.Sequence,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_mutable_sequence(cls, **kwargs) -> Self:
+    def is_mutable_sequence(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a MutableSequence (:external+python:py:class:`collections.abc.MutableSequence`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.MutableSequence,), **kwargs)
+        return cls(types=(collections.abc.MutableSequence,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_byte_string(cls, **kwargs) -> Self:
+    def is_byte_string(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a ByteString (:external+python:py:class:`collections.abc.ByteString`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.ByteString,), **kwargs)
+        return cls(types=(collections.abc.ByteString,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_set(cls, **kwargs) -> Self:
+    def is_set(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Set (:external+python:py:class:`collections.abc.Set`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Set,), **kwargs)
+        return cls(types=(collections.abc.Set,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_mutable_set(cls, **kwargs) -> Self:
+    def is_mutable_set(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a MutableSet (:external+python:py:class:`collections.abc.MutableSet`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.MutableSet,), **kwargs)
+        return cls(types=(collections.abc.MutableSet,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_mapping(cls, **kwargs) -> Self:
+    def is_mapping(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Mapping (:external+python:py:class:`collections.abc.Mapping`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Mapping,), **kwargs)
+        return cls(types=(collections.abc.Mapping,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_mutable_mapping(cls, **kwargs) -> Self:
+    def is_mutable_mapping(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a MutableMapping (:external+python:py:class:`collections.abc.MutableMapping`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.MutableMapping,), **kwargs)
+        return cls(types=(collections.abc.MutableMapping,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_mapping_view(cls, **kwargs) -> Self:
+    def is_mapping_view(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a MappingView (:external+python:py:class:`collections.abc.MappingView`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.MappingView,), **kwargs)
+        return cls(types=(collections.abc.MappingView,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_items_view(cls, **kwargs) -> Self:
+    def is_items_view(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an ItemsView (:external+python:py:class:`collections.abc.ItemsView`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.ItemsView,), **kwargs)
+        return cls(types=(collections.abc.ItemsView,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_keys_view(cls, **kwargs) -> Self:
+    def is_keys_view(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a KeysView (:external+python:py:class:`collections.abc.KeysView`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.KeysView,), **kwargs)
+        return cls(types=(collections.abc.KeysView,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_values_view(cls, **kwargs) -> Self:
+    def is_values_view(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a ValuesView (:external+python:py:class:`collections.abc.ValuesView`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.ValuesView,), **kwargs)
+        return cls(types=(collections.abc.ValuesView,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_awaitable(cls, **kwargs) -> Self:
+    def is_awaitable(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an Awaitable (:external+python:py:class:`collections.abc.Awaitable`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Awaitable,), **kwargs)
+        return cls(types=(collections.abc.Awaitable,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_async_iterable(cls, **kwargs) -> Self:
+    def is_async_iterable(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an AsyncIterable (:external+python:py:class:`collections.abc.AsyncIterable`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.AsyncIterable,), **kwargs)
+        return cls(types=(collections.abc.AsyncIterable,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_async_iterator(cls, **kwargs) -> Self:
+    def is_async_iterator(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an AsyncIterator (:external+python:py:class:`collections.abc.AsyncIterator`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.AsyncIterator,), **kwargs)
+        return cls(types=(collections.abc.AsyncIterator,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_coroutine(cls, **kwargs) -> Self:
+    def is_coroutine(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Coroutine (:external+python:py:class:`collections.abc.Coroutine`).
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Coroutine,), **kwargs)
+        return cls(types=(collections.abc.Coroutine,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_async_generator(cls, **kwargs) -> Self:
+    def is_async_generator(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of an AsyncGenerator (:external+python:py:class:`collections.abc.AsyncGenerator`).
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(collections.abc.AsyncGenerator,), **kwargs)
-     
-    @classmethod
-    def is_buffer(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a Buffer (:external+python:py:class:`collections.abc.Buffer`).
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Buffer,), **kwargs)
+        return cls(types=(collections.abc.AsyncGenerator,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of(cls, of_type: type, **kwargs) -> Self:
+    def is_buffer(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a Buffer (:external+python:py:class:`collections.abc.Buffer`).
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(collections.abc.Buffer,),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def list_of(cls, of_type: type, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `of_type`.
 
@@ -1906,147 +4107,471 @@ class BaseChecker:
         of_type: type
             The type to check against
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
-     
-    @classmethod
-    def list_of_int(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a list and contains values of type `int`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=of_type),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_float(cls, **kwargs) -> Self:
+    def list_of_int(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a list and contains values of type `int`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(int,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def list_of_float(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `float`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
-     
-    @classmethod
-    def list_of_str(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a list and contains values of type `str`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(float,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_tuple(cls, **kwargs) -> Self:
+    def list_of_str(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a list and contains values of type `str`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(str,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def list_of_tuple(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `tuple`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
-     
-    @classmethod
-    def list_of_dict(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a list and contains values of type `dict`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(tuple,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_list(cls, **kwargs) -> Self:
+    def list_of_dict(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a list and contains values of type `dict`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(dict,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def list_of_list(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `list`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(list,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_slice(cls, **kwargs) -> Self:
+    def list_of_slice(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `slice`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(slice,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_integer(cls, **kwargs) -> Self:
+    def list_of_integer(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `int`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(int,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_number(cls, **kwargs) -> Self:
+    def list_of_number(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `int` or `float`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(int, float)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_string(cls, **kwargs) -> Self:
+    def list_of_string(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and contains values of type `str`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
-     
-    @classmethod
-    def list_of_dictionary(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a list and contains values of type `dict`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(str,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of(cls, of_type: type, **kwargs) -> Self:
+    def list_of_dictionary(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a list and contains values of type `dict`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(list,),) + cls(validators=check_inside_type(type_=(dict,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def tuple_of(cls, of_type: type, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `of_type`.
 
@@ -2055,147 +4580,471 @@ class BaseChecker:
         of_type: type
             The type to check against
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
-     
-    @classmethod
-    def tuple_of_int(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a tuple and contains values of type `int`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=of_type),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_float(cls, **kwargs) -> Self:
+    def tuple_of_int(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a tuple and contains values of type `int`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(int,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def tuple_of_float(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `float`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
-     
-    @classmethod
-    def tuple_of_str(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a tuple and contains values of type `str`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(float,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_tuple(cls, **kwargs) -> Self:
+    def tuple_of_str(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a tuple and contains values of type `str`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(str,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def tuple_of_tuple(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `tuple`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
-     
-    @classmethod
-    def tuple_of_dict(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a tuple and contains values of type `dict`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(tuple,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_list(cls, **kwargs) -> Self:
+    def tuple_of_dict(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a tuple and contains values of type `dict`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(dict,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def tuple_of_list(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `list`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(list,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_slice(cls, **kwargs) -> Self:
+    def tuple_of_slice(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `slice`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(slice,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_integer(cls, **kwargs) -> Self:
+    def tuple_of_integer(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `int`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(int,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_number(cls, **kwargs) -> Self:
+    def tuple_of_number(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `int` or `float`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(int, float)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_string(cls, **kwargs) -> Self:
+    def tuple_of_string(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and contains values of type `str`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
-     
-    @classmethod
-    def tuple_of_dictionary(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a tuple and contains values of type `dict`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(str,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of(cls, of_type: type, **kwargs) -> Self:
+    def tuple_of_dictionary(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a tuple and contains values of type `dict`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(tuple,),) + cls(validators=check_inside_type(type_=(dict,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def sequence_of(cls, of_type: type, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `of_type`.
 
@@ -2204,147 +5053,471 @@ class BaseChecker:
         of_type: type
             The type to check against
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=of_type), **kwargs)
-     
-    @classmethod
-    def sequence_of_int(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=of_type),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_float(cls, **kwargs) -> Self:
+    def sequence_of_int(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(int,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def sequence_of_float(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `float`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(float,)), **kwargs)
-     
-    @classmethod
-    def sequence_of_str(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(float,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_tuple(cls, **kwargs) -> Self:
+    def sequence_of_str(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(str,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def sequence_of_tuple(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `tuple`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(tuple,)), **kwargs)
-     
-    @classmethod
-    def sequence_of_dict(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(tuple,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_list(cls, **kwargs) -> Self:
+    def sequence_of_dict(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(dict,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def sequence_of_list(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `list`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(list,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(list,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_slice(cls, **kwargs) -> Self:
+    def sequence_of_slice(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `slice`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(slice,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(slice,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_integer(cls, **kwargs) -> Self:
+    def sequence_of_integer(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(int,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_number(cls, **kwargs) -> Self:
+    def sequence_of_number(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `int` or `float`.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(int, float)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(int, float)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_string(cls, **kwargs) -> Self:
+    def sequence_of_string(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `str`.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(str,)), **kwargs)
-     
-    @classmethod
-    def sequence_of_dictionary(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_inside_type(type_=(dict,)), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(str,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def has_attr(cls, attr: str, **kwargs) -> Self:
+    def sequence_of_dictionary(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and contains values of type `dict`.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_inside_type(type_=(dict,)),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def has_attr(cls, attr: str, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value has attribute `attr`.
 
@@ -2353,15 +5526,42 @@ class BaseChecker:
         attr: str
             The attribute to check for
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_has_attr(attr=attr), **kwargs)
+        return cls(validators=check_has_attr(attr=attr),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def has_method(cls, method: str, **kwargs) -> Self:
+    def has_method(cls, method: str, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value has method `method`.
 
@@ -2370,15 +5570,42 @@ class BaseChecker:
         method: str
             The method to check for
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_has_method(method=method), **kwargs)
+        return cls(validators=check_has_method(method=method),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def has_property(cls, property: str, **kwargs) -> Self:
+    def has_property(cls, property: str, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value has property `property`.
 
@@ -2387,15 +5614,42 @@ class BaseChecker:
         property: str
             The property to check for
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_has_property(property=property), **kwargs)
+        return cls(validators=check_has_property(property=property),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def starts_with(cls, start: str, **kwargs) -> Self:
+    def starts_with(cls, start: str, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a str and starts with `start`.
 
@@ -2404,15 +5658,42 @@ class BaseChecker:
         start: str
             The correct start
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(str,), **kwargs) + cls(validators=check_starts_with(start=start), **kwargs)
+        return cls(types=(str,),) + cls(validators=check_starts_with(start=start),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def ends_with(cls, end: str, **kwargs) -> Self:
+    def ends_with(cls, end: str, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a str and ends in `end`.
 
@@ -2421,15 +5702,42 @@ class BaseChecker:
         end: str
             The correct end
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(str,), **kwargs) + cls(validators=check_ends_with(end=end), **kwargs)
+        return cls(types=(str,),) + cls(validators=check_ends_with(end=end),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy_dim(cls, dims: int, **kwargs) -> Self:
+    def numpy_dim(cls, dims: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and has `dims` dimensions.
 
@@ -2438,15 +5746,42 @@ class BaseChecker:
         dims: int
             The correct number of dimensions
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dims(dims=dims), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_numpy_dims(dims=dims),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy_shape(cls, shape: tuple[int], **kwargs) -> Self:
+    def numpy_shape(cls, shape: tuple[int], *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and has shape `shape`.
 
@@ -2455,15 +5790,42 @@ class BaseChecker:
         shape: tuple[int]
             The correct shape
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_shape(shape=shape), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_numpy_shape(shape=shape),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy_dtype(cls, dtype: type, **kwargs) -> Self:
+    def numpy_dtype(cls, dtype: type, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and has dtype `dtype`.
 
@@ -2472,15 +5834,42 @@ class BaseChecker:
         dtype: type
             The correct dtype
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_dtype(dtype=dtype), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_numpy_dtype(dtype=dtype),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy_subdtype(cls, subdtype: type, **kwargs) -> Self:
+    def numpy_subdtype(cls, subdtype: type, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and has subdtype `subdtype`.
 
@@ -2489,15 +5878,42 @@ class BaseChecker:
         subdtype: type
             The correct subdtype
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy_subdtype(subdtype=subdtype), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_numpy_subdtype(subdtype=subdtype),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_of_length(cls, length: int, **kwargs) -> Self:
+    def sequence_of_length(cls, length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and of length `length`.
 
@@ -2506,15 +5922,42 @@ class BaseChecker:
         length: int
             The correct length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_len(length=length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def sequence_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
+    def sequence_between_lengths(cls, min_length: int, max_length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a Sequence (:external+python:py:class:`collections.abc.Sequence`) and of length between `min_length` and `max_length` (both inclusive).
 
@@ -2525,15 +5968,42 @@ class BaseChecker:
         max_length: int
             The maximum length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(collections.abc.Sequence,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
+        return cls(types=(collections.abc.Sequence,),) + cls(validators=check_lens(min_length=min_length, max_length=max_length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_of_length(cls, length: int, **kwargs) -> Self:
+    def list_of_length(cls, length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and of length `length`.
 
@@ -2542,15 +6012,42 @@ class BaseChecker:
         length: int
             The correct length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_len(length=length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def list_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
+    def list_between_lengths(cls, min_length: int, max_length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a list and of length between `min_length` and `max_length` (both inclusive).
 
@@ -2561,15 +6058,42 @@ class BaseChecker:
         max_length: int
             The maximum length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(list,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
+        return cls(types=(list,),) + cls(validators=check_lens(min_length=min_length, max_length=max_length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_of_length(cls, length: int, **kwargs) -> Self:
+    def tuple_of_length(cls, length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and of length `length`.
 
@@ -2578,15 +6102,42 @@ class BaseChecker:
         length: int
             The correct length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_len(length=length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def tuple_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
+    def tuple_between_lengths(cls, min_length: int, max_length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a tuple and of length between `min_length` and `max_length` (both inclusive).
 
@@ -2597,15 +6148,42 @@ class BaseChecker:
         max_length: int
             The maximum length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(tuple,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
+        return cls(types=(tuple,),) + cls(validators=check_lens(min_length=min_length, max_length=max_length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy_array_of_length(cls, length: int, **kwargs) -> Self:
+    def numpy_array_of_length(cls, length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and of length `length`.
 
@@ -2614,15 +6192,42 @@ class BaseChecker:
         length: int
             The correct length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_len(length=length), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_len(length=length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy_array_between_lengths(cls, min_length: int, max_length: int, **kwargs) -> Self:
+    def numpy_array_between_lengths(cls, min_length: int, max_length: int, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and of length between `min_length` and `max_length` (both inclusive).
 
@@ -2633,51 +6238,159 @@ class BaseChecker:
         max_length: int
             The maximum length
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_lens(min_length=min_length, max_length=max_length), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_lens(min_length=min_length, max_length=max_length),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_path(cls, **kwargs) -> Self:
+    def is_path(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is a valid path.
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_path(), **kwargs)
+        return cls(validators=check_path(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def is_dir(cls, **kwargs) -> Self:
+    def is_dir(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is a valid directory.
         
-        Returns
+        Other Parameters
         -------
-        Self
-            A new instance of the class with the given validators and other parameters applied
-        """
-        return cls(validators=check_dir(), **kwargs)
-     
-    @classmethod
-    def is_file(cls, **kwargs) -> Self:
-        """
-        Generate checker to check if the value is a valid file.
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(validators=check_file(), **kwargs)
+        return cls(validators=check_dir(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
      
     @classmethod
-    def numpy(cls, dims: int, shape: int | tuple[int], dtype: type, **kwargs) -> Self:
+    def is_file(cls, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
+        """
+        Generate checker to check if the value is a valid file.
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
+        Returns
+        -------
+        Self
+            A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
+        """
+        return cls(validators=check_file(),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
+     
+    @classmethod
+    def numpy(cls, dims: int, shape: int | tuple[int], dtype: type, *, default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue) -> Self:
         """
         Generate checker to check if the value is an instance of a numpy array and has `dims` dimensions, shape `shape` and dtype `dtype`.
 
@@ -2690,12 +6403,39 @@ class BaseChecker:
         dtype: type
             The correct dtype
         
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            The number line that the attribute must be on
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be
+        types: tuple[type, ...] | type
+            The types that the attribute must be
+        converter: Callable[[object], object]
+            A function that converts the attribute to the correct type
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
+        
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         """
-        return cls(types=(np.ndarray,), **kwargs) + cls(validators=check_numpy(dims=dims, shape=shape, dtype=dtype), **kwargs)
+        return cls(types=(np.ndarray,),) + cls(validators=check_numpy(dims=dims, shape=shape, dtype=dtype),)+ cls(default = default, default_factory = default_factory, number_line = number_line, literals = literals, types = types, converter = converter, validators = validators, replace_none = replace_none)
     
 
 

@@ -21,7 +21,7 @@ class Parameter:
     type: str
     description: str
     _ = KW_ONLY
-    default: any = NoValue
+    default: object = NoValue
     call_value: str = NoValue
 
     def __post_init__(self):
@@ -163,11 +163,25 @@ def make_checker(validators: Sequence[Validator], prefix=""):
     parameters = [param for validator in param_validators for param in validator.parameters]
     parameters.sort(key=lambda x: x.default is not NoValue)
 
-    parameter_string = ", ".join(
-        [param_str(param) for param in parameters if param.name is not None],
-    )
-    if parameter_string:
-        parameter_string = ", " + parameter_string
+    parameter_string = ""
+    found_kwargs = False
+    for param in parameters:
+        if param.name is None:
+            continue
+        if param.default is NoValue:
+            parameter_string += f", {param.name}: {param.type}"
+        else:
+            if not found_kwargs:
+                parameter_string += ", *"
+                found_kwargs = True
+            parameter_string += f", {param.name}: {param.type} = {param.default}"
+
+    kwargs = (", default = NoValue, default_factory = NoValue, number_line = NoValue, literals = NoValue, "
+              "types = NoValue, converter = NoValue, validators = NoValue, replace_none = NoValue")
+    if not found_kwargs:
+        parameter_string += ", *"
+    parameter_string += kwargs
+
 
     description_validators = [validator for validator in validators if validator.param_name != "default"]
     description = "Generate checker to check if the value "
@@ -219,9 +233,12 @@ def make_checker(validators: Sequence[Validator], prefix=""):
             )
 
         name += "," if name[-1] != "(" else ""
-        return name + " **kwargs)"
+        return name + ")"
 
-    call_string = " + ".join([call_str(validator) for validator in validators])
+    call_string = (" + ".join([call_str(validator) for validator in validators])
+                   + "+ cls(default = default, default_factory = default_factory, number_line = number_line,"
+                     " literals = literals, types = types, converter = converter, validators = validators,"
+                     " replace_none = replace_none)")
 
     add_func = ""
 
@@ -231,14 +248,42 @@ def make_checker(validators: Sequence[Validator], prefix=""):
 
     func = f""" 
     @classmethod
-    def {prefix}{func_name}(cls{parameter_string}, **kwargs) -> Self:
+    def {prefix}{func_name}(cls{parameter_string}) -> Self:
         \"\"\"
         {description}.{parameters_header}{parameter_description}
+        
+        Other Parameters
+        -------
+        default: object
+            The default value of the attribute. If default is mutable, it must have a `copy` method. An object is
+            considered mutable if it does not have a `__hash__` method.
+        default_factory: Callable[[], object]
+            A function that returns the default value of the attribute.
+        number_line: NumberLine
+            A NumberLine instance which the attribute must lie on.
+        literals: tuple[object, ...] | object
+            The literals that the attribute must be one of
+        types: tuple[type, ...] | type
+            The types that the attribute must be one of
+        converter: Callable[[object], object]
+            A function that converts the attribute to a new value
+        validators: tuple[Callable[[object], Exception | None], ...] | Callable[[object], Exception | None]
+            A tuple of functions that check if the attribute is valid. The value is assumed correct when the function
+            neither returns nor raises and exception.
+        replace_none: bool
+            Whether to replace `None` values with the default value. If `True`, `None` values will be replaced with the
+            default value. If `False`, `None` values will raise an error. NoValue values will always be replaced with
+            the default value.
         
         Returns
         -------
         Self
             A new instance of the class with the given validators and other parameters applied
+            
+        Notes
+        -------
+        The kwarg parameters described in the "Other Parameters" may already be set by the function itself, so this may
+        raise errors when also trying to set the same value manually.
         \"\"\"{add_func}
         return {call_string}
     """.replace("\t", "    ")
@@ -803,20 +848,20 @@ contains = Validator(
     parameters=[Parameter("contains", "contains", "str", "The value to contain")],
     add_func=check_contains,
 )
-literals = Validator(
-    "literals",
-    "literals",
-    "literals",
-    docstring_description="is one of `{0}`",
-    parameters=[
-        Parameter(
-            "literals",
-            "literals",
-            "collections.abc.Sequence",
-            "The literals to check against",
-        ),
-    ],
-)
+# literals = Validator(
+#     "literals",
+#     "literals",
+#     "literals",
+#     docstring_description="is one of `{0}`",
+#     parameters=[
+#         Parameter(
+#             "literals",
+#             "literals",
+#             "collections.abc.Sequence",
+#             "The literals to check against",
+#         ),
+#     ],
+# )
 
 
 def check_sorted():
@@ -847,12 +892,12 @@ sorted_val = Validator(
     docstring_description="is sorted",
     add_func=check_sorted,
 )
-default = Validator(
-    "default",
-    "default",
-    "default",
-    parameters=[Parameter("default", "default", "any", "The default value")],
-)
+# default = Validator(
+#     "default",
+#     "default",
+#     "default",
+#     parameters=[Parameter("default", "default", "object", "The default value")],
+# )
 
 
 def make_combinations(file_handle, *args: Iterable[Validator]):
@@ -898,8 +943,8 @@ out_loc = os.path.join(path.parent, "_base_checker.py")
 stub_str = shutil.copy(stub_loc, out_loc)
 with open(out_loc, "a") as file:
     # Default
-    write_validators(file, [default])
-    make_combinations(file, [default], types.values())
+    # write_validators(file, [default])
+    # make_combinations(file, [default], types.values())
 
     # Numeric
     make_combinations(
@@ -914,7 +959,7 @@ with open(out_loc, "a") as file:
         write_validator_name(file, [numbers["integer"], validator], name=validator.name)
 
     # Types
-    write_validators(file, [contains, literals, non_zero, length, lengths, sorted_val])
+    write_validators(file, [contains, non_zero, length, lengths, sorted_val])
     write_validators(file, types.values(), prefix="is_")
     write_validators(file, abcs.values(), prefix="is_")
     for container in [types["list"], types["tuple"], abcs["Sequence"]]:
