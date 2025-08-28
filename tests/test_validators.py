@@ -14,6 +14,15 @@ def test_validator():
 
     Validator.is_int()(1, "test")
     Validator.positive_float(include_zero=True)(0.0, "test")
+    with raises(TypeError):
+        Validator.positive_float(True, 0.0, "test")
+    Validator.positive_float(include_zero=True, value=0.0, name="test")
+
+    with raises(TypeError):
+        Validator.is_int()(1.46)
+
+    with raises(TypeError):
+        Validator.is_int(value=1.46)
 
 
 if __name__ == "__main__":
